@@ -1,0 +1,78 @@
+# Threat model as code — Chapter 4 reference application WITH the MCP-connected agent (LAB-01 solution).
+# Synthetic system for training purposes.
+system: dt-three-tier-orders
+version: 1
+trust_boundaries:
+  - {id: TB1, name: "Internet → CDN / web frontend"}
+  - {id: TB2, name: "Web frontend → API gateway"}
+  - {id: TB3, name: "API gateway → application service"}
+  - {id: TB4, name: "Application service → managed PostgreSQL"}
+  - {id: TB5, name: "Application service → external payment API"}
+  - {id: TB6, name: "Orders service → AI support agent (LLM)"}
+  - {id: TB7, name: "AI support agent → MCP tool server"}
+data_flows:
+  - {id: DF1, from: browser, to: web-frontend, crosses: TB1}
+  - {id: DF2, from: web-frontend, to: api-gateway, crosses: TB2}
+  - {id: DF3, from: api-gateway, to: orders-service, crosses: TB3}
+  - {id: DF4, from: orders-service, to: postgres, crosses: TB4}
+  - {id: DF5, from: orders-service, to: payment-api, crosses: TB5}
+  - {id: DF6, from: orders-service, to: support-agent, crosses: TB6}
+  - {id: DF7, from: support-agent, to: mcp-orders-tool, crosses: TB7}
+threats:
+  - id: T-001
+    flow: DF1
+    category: S
+    title: Session token theft enables user impersonation
+    risk: high
+    mitigations:
+      - {control: "HttpOnly/Secure/SameSite cookies, short token lifetime", owner: web-team, status: implemented}
+  - id: T-002
+    flow: DF2
+    category: T
+    title: Tampered JWT accepted by gateway
+    risk: high
+    mitigations:
+      - {control: "Gateway validates JWT signature, issuer, audience and expiry", owner: platform-team, status: implemented}
+  - id: T-003
+    flow: DF3
+    category: E
+    title: Unauthenticated service-to-service call bypasses gateway
+    risk: medium
+    mitigations:
+      - {control: "mTLS with workload identity between gateway and service (Ch. 6-7)", owner: platform-team, status: planned}
+  - id: T-004
+    flow: DF4
+    category: I
+    title: SQL injection discloses other customers' orders
+    risk: high
+    mitigations:
+      - {control: "Parameterised queries + SAST gate (LAB-05)", owner: app-team, status: implemented}
+  - id: T-005
+    flow: DF5
+    category: R
+    title: Disputed payment with no verifiable request record
+    risk: medium
+    mitigations:
+      - {control: "Signed, immutable payment request log with correlation IDs", owner: app-team, status: planned}
+  - id: T-006
+    flow: DF6
+    category: T
+    title: Indirect prompt injection via order notes steers the agent
+    risk: high
+    mitigations:
+      - {control: "Treat retrieved content as data; output validation before any action (Ch. 29)", owner: ai-team, status: implemented}
+  - id: T-007
+    flow: DF7
+    category: A
+    title: Agent invokes a tool outside its purpose (excessive agency)
+    risk: high
+    mitigations:
+      - {control: "Per-agent tool allowlist enforced at the MCP gateway (LAB-18, Ch. 31)", owner: ai-team, status: implemented}
+      - {control: "Human approval for write actions", owner: ai-team, status: implemented}
+  - id: T-008
+    flow: DF7
+    category: S
+    title: Agent reuses a shared service-account identity
+    risk: medium
+    mitigations:
+      - {control: "Dedicated workload identity per agent (Ch. 6, Ch. 31)", owner: platform-team, status: planned}

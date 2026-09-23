@@ -1,0 +1,54 @@
+# AWS-LAB-01 — keyless push to Amazon ECR using GitHub OIDC. No AWS keys exist anywhere.
+name: push-to-ecr
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  ECR_REPOSITORY: dt-aws-lab-01/dt-orders-api
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write     # request the GitHub OIDC token that AWS STS exchanges for short-lived credentials
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Assume the lab role via OIDC (fails outside the allowed repo/branch)
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: dt-aws-lab-01-${{ github.run_id }}
+
+      - name: Show who we are (proves no static keys are used)
+        run: aws sts get-caller-identity
+
+      - name: Log in to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2.1.7
+
+      - name: Build and push (immutable tag = commit SHA)
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+        run: |
+          docker build -t "${REGISTRY}/${ECR_REPOSITORY}:${GITHUB_SHA}" app
+          docker push "${REGISTRY}/${ECR_REPOSITORY}:${GITHUB_SHA}"
+
+      - name: Wait for scan-on-push and fail on CRITICAL findings
+        run: |
+          aws ecr wait image-scan-complete --repository-name "$ECR_REPOSITORY" --image-id imageTag="$GITHUB_SHA"
+          aws ecr describe-image-scan-findings --repository-name "$ECR_REPOSITORY" --image-id imageTag="$GITHUB_SHA" \
+            --query 'imageScanFindings.findingSeverityCounts' --output json | tee counts.json
+          critical=$(jq -r '.CRITICAL // 0' counts.json)
+          [ "$critical" -eq 0 ] || { echo "::error::${critical} CRITICAL findings"; exit 1; }

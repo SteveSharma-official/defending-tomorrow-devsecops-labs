@@ -1,0 +1,9 @@
+# LAB-05 Step 7 — INTENTIONALLY VULNERABLE. Replace the body of list_orders() in app/app.py with:
+@app.get("/orders")
+def list_orders():
+    customer = request.args.get("customer", "")
+    limit = int(load_config().get("max_results", 50))
+    rows = get_db().execute(
+        f"SELECT id, customer, item, qty FROM orders WHERE customer = '{customer}' LIMIT {limit}"
+    ).fetchall()
+    return jsonify([dict(r) for r in rows])

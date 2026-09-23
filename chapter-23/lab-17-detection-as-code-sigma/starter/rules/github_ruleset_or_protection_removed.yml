@@ -1,0 +1,25 @@
+title: GitHub Branch Protection or Ruleset Removed
+id: 0f7c1f7e-5d7a-4b8e-8e3f-6b2f0e1c9a02
+status: test
+description: >-
+  Detects deletion of branch protection rules or repository rulesets — weakening of the
+  source-surface controls configured in Chapter 10 / LAB-02.
+references:
+  - https://docs.github.com/en/organizations/keeping-your-organization-secure/managing-security-settings-for-your-organization/audit-log-events-for-your-organization
+author: Defending Tomorrow labs
+date: 2026-09-23
+tags:
+  - attack.defense-evasion
+  - attack.t1562.001
+logsource:
+  product: github
+  service: audit
+detection:
+  selection:
+    action:
+      - protected_branch.destroy
+      - repository_ruleset.destroy
+  condition: selection
+falsepositives:
+  - Planned migration from branch protection rules to rulesets (correlate with a change ticket)
+level: high

@@ -1,0 +1,21 @@
+# LAB-07 Step 7 — INTENTIONALLY INSECURE. Save as infra/admin-access.tf
+# A "temporary" admin rule that opens SSH to the internet — a pattern seen in many cloud incidents.
+resource "aws_security_group" "admin" {
+  name        = "dt-lab-07-admin"
+  description = "Temporary admin access"
+
+  ingress {
+    description = "SSH from anywhere"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}

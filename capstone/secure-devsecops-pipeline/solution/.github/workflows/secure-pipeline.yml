@@ -1,0 +1,304 @@
+# CAPSTONE — Defending Tomorrow secure software factory pipeline.
+# Source surface → build surface → deploy surface → evidence, as one governed flow (Chapters 9–18).
+name: secure-pipeline
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: secure-pipeline-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  REGISTRY: ghcr.io
+  GITLEAKS_VERSION: "8.28.0"
+  GITLEAKS_SHA256: "a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb"
+  TRIVY_VERSION: "0.70.0"
+  TRIVY_SHA256: "8b4376d5d6befe5c24d503f10ff136d9e0c49f9127a4279fd110b727929a5aa9"
+  KYVERNO_VERSION: "1.15.2"
+  KYVERNO_SHA256: "c90520ba24fb8b8df003ec22d6d2621e4a3d3c7497665fdcf84e9eab4ff1dfe0"
+
+jobs:
+  # ───────────── Source surface (Chapter 10) and design (Chapter 4) ─────────────
+  threat_model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with: {python-version: "3.13"}
+      - run: pip install PyYAML==6.0.3 && python tools/check_threat_model.py threat-model/threat-model.yaml
+
+  workflow_lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with: {python-version: "3.13"}
+      - run: pip install zizmor==1.30.1 actionlint-py==1.7.12.25
+      - run: actionlint && zizmor --offline --min-severity medium .github/workflows/
+
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {fetch-depth: 0, persist-credentials: false}
+      - run: |
+          curl -sSLo gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  gitleaks.tgz" | sha256sum --check --strict
+          tar -xzf gitleaks.tgz gitleaks && ./gitleaks git . --redact --no-banner
+
+  # ───────────── Build surface: code and dependency analysis (Chapters 11, 13, 19) ─────────────
+  sast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with: {python-version: "3.13"}
+      - run: pip install semgrep==1.177.0 && semgrep scan --config .semgrep/ --metrics=off --error --severity ERROR app/
+
+  sca:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {persist-credentials: false}
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        if: github.event_name == 'pull_request'
+        with: {fail-on-severity: high}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with: {python-version: "3.13"}
+      - run: pip install pip-audit==2.10.1 && pip-audit -r app/requirements.txt
+
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with: {python-version: "3.13"}
+      - run: pip install -r app/requirements.txt -r app/requirements-dev.txt && pytest -q app
+
+  # ───────────── Deploy-surface policy, shifted left (Chapter 14) ─────────────
+  k8s_policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {persist-credentials: false}
+      - run: |
+          curl -sSLo kyverno.tgz "https://github.com/kyverno/kyverno/releases/download/v${KYVERNO_VERSION}/kyverno-cli_v${KYVERNO_VERSION}_linux_x86_64.tar.gz"
+          echo "${KYVERNO_SHA256}  kyverno.tgz" | sha256sum --check --strict
+          tar -xzf kyverno.tgz kyverno
+          ./kyverno test policy-tests
+          ./kyverno apply k8s-policies/ --resource k8s/
+
+  # ───────────── Build, verify properties, DAST, SBOM; publish + attest + sign on main (Chapters 11, 13, 14) ─────────────
+  build_scan:
+    needs: [threat_model, workflow_lint, secrets, sast, sca, tests, k8s_policy]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    outputs:
+      digest: ${{ steps.push.outputs.digest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {persist-credentials: false}
+      - name: Image name
+        id: name
+        run: |
+          echo "image=${REGISTRY}/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+          echo "local=dt-capstone:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+      - name: Build
+        env: {LOCAL: "${{ steps.name.outputs.local }}"}
+        run: docker build --pull -t "$LOCAL" app
+      - name: Artefact-property gates (non-root, no credential ENV)
+        env: {LOCAL: "${{ steps.name.outputs.local }}"}
+        run: |
+          user=$(docker image inspect --format '{{.Config.User}}' "$LOCAL")
+          case "$user" in ""|"0"|"root"|"0:0"|"root:root") echo "::error::runs as root"; exit 1;; esac
+          ! docker image inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$LOCAL" | grep -Ei '^[A-Z_]*(TOKEN|SECRET|PASSWORD|API_KEY)[A-Z_]*='
+      - name: Run hardened container for DAST
+        env: {LOCAL: "${{ steps.name.outputs.local }}"}
+        run: |
+          docker run -d --name app --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges -p 8080:8080 "$LOCAL"
+          for _ in $(seq 1 30); do curl -fsS http://localhost:8080/health && break; sleep 1; done
+      - name: DAST — OWASP ZAP baseline
+        uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
+        with:
+          target: "http://localhost:8080/orders?customer=alice"
+          rules_file_name: ".zap/rules.tsv"
+          allow_issue_writing: false
+          fail_action: true
+          artifact_name: zap-report
+      - name: Image vulnerability + secret scan (checksum-verified Trivy)
+        env: {LOCAL: "${{ steps.name.outputs.local }}"}
+        run: |
+          docker rm -f app
+          curl -sSLo trivy.tgz "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          echo "${TRIVY_SHA256}  trivy.tgz" | sha256sum --check --strict
+          tar -xzf trivy.tgz trivy
+          ./trivy image --scanners vuln,secret --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 "$LOCAL"
+      - name: SBOM (CycloneDX)
+        uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
+        with:
+          image: ${{ steps.name.outputs.local }}
+          format: cyclonedx-json
+          output-file: sbom.cdx.json
+          upload-artifact: true
+      - name: Publish by digest (main only)
+        id: push
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          LOCAL: ${{ steps.name.outputs.local }}
+          IMAGE: ${{ steps.name.outputs.image }}
+          GH_ACTOR: ${{ github.actor }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$GH_TOKEN" | docker login "$REGISTRY" -u "$GH_ACTOR" --password-stdin
+          docker tag "$LOCAL" "${IMAGE}:${GITHUB_SHA}"
+          docker push "${IMAGE}:${GITHUB_SHA}"
+          digest=$(docker image inspect --format '{{index .RepoDigests 0}}' "${IMAGE}:${GITHUB_SHA}" | cut -d@ -f2)
+          echo "digest=${digest}" >> "$GITHUB_OUTPUT"
+          docker logout "$REGISTRY"
+      - name: Attest build provenance
+        if: steps.push.outputs.digest != ''
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-name: ${{ steps.name.outputs.image }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+      - name: Attest SBOM
+        if: steps.push.outputs.digest != ''
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-name: ${{ steps.name.outputs.image }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          sbom-path: sbom.cdx.json
+          push-to-registry: true
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        if: steps.push.outputs.digest != ''
+      - name: Keyless signature
+        if: steps.push.outputs.digest != ''
+        env:
+          IMAGE: ${{ steps.name.outputs.image }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: cosign sign --yes "${IMAGE}@${DIGEST}"
+
+  # ───────────── Decision (Chapter 11 / 17) ─────────────
+  release_decision:
+    needs: [threat_model, workflow_lint, secrets, sast, sca, tests, k8s_policy, build_scan]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {contents: read}
+    outputs:
+      allow: ${{ steps.decide.outputs.allow }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {persist-credentials: false}
+      - uses: open-policy-agent/setup-opa@b2b258e089860efaadaaf71bf6e3aecb4a3eeff1 # v2.4.0
+        with: {version: "1.20.2"}
+      - name: Decide
+        id: decide
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: |
+          opa test policy -v
+          jq -n --argjson needs "$NEEDS_JSON" --arg ref "$GITHUB_REF" \
+            '{checks: ($needs | with_entries(.value = .value.result)), environment: "production", ref: $ref}' > decision.json
+          cat decision.json
+          opa eval -f pretty -d policy -i decision.json 'data.release.violations'
+          allow=$(opa eval -f raw -d policy -i decision.json 'data.release.allow')
+          echo "allow=${allow}" >> "$GITHUB_OUTPUT"
+          [ "$allow" = "true" ]
+
+  # ───────────── Evidence (Chapter 18) — always produced ─────────────
+  evidence:
+    needs: [threat_model, workflow_lint, secrets, sast, sca, tests, k8s_policy, build_scan]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with: {python-version: "3.13"}
+      - name: Build and verify evidence
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          IMAGE_DIGEST: ${{ needs.build_scan.outputs.digest }}
+        run: |
+          pip install PyYAML==6.0.3
+          python tools/pipeline_evidence.py controls/pipeline-controls.yaml evidence.json
+          python tools/verify_evidence.py evidence.json
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        if: github.event_name != 'pull_request'
+        with: {subject-path: evidence.json}
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with: {name: "evidence-${{ github.run_id }}", path: evidence.json, retention-days: 90}
+
+  # ───────────── Deploy gate: verify before use (Chapters 11, 13) ─────────────
+  deploy_staging:
+    needs: [release_decision, build_scan]
+    if: needs.release_decision.outputs.allow == 'true' && needs.build_scan.outputs.digest != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: staging
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      - name: Verify provenance, SBOM attestation and signature
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DIGEST: ${{ needs.build_scan.outputs.digest }}
+        run: |
+          IMAGE="${REGISTRY}/${GITHUB_REPOSITORY,,}"
+          gh attestation verify "oci://${IMAGE}@${DIGEST}" --repo "$GITHUB_REPOSITORY"
+          gh attestation verify "oci://${IMAGE}@${DIGEST}" --repo "$GITHUB_REPOSITORY" --predicate-type https://cyclonedx.org/bom
+          cosign verify "${IMAGE}@${DIGEST}" \
+            --certificate-identity "https://github.com/${GITHUB_REPOSITORY}/.github/workflows/secure-pipeline.yml@refs/heads/main" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com > /dev/null
+      - name: Deploy (simulated — see Extension Challenge 1 for a real kind cluster)
+        env: {DIGEST: "${{ needs.build_scan.outputs.digest }}"}
+        run: echo "Deploying ${REGISTRY}/${GITHUB_REPOSITORY,,}@${DIGEST} to staging"
+
+  deploy_production:
+    needs: [deploy_staging, build_scan]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production            # required reviewer + main-only
+    permissions: {contents: read}
+    steps:
+      - env: {DIGEST: "${{ needs.build_scan.outputs.digest }}"}
+        run: echo "Deploying ${REGISTRY}/${GITHUB_REPOSITORY,,}@${DIGEST} to production"

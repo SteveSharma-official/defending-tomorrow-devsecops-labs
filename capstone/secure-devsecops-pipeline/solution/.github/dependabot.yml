@@ -1,0 +1,12 @@
+# LAB-06 — keep dependencies and pinned actions current through reviewed pull requests.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /app
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

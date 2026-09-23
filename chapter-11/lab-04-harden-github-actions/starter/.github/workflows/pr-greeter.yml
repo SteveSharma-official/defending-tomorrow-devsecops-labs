@@ -1,0 +1,23 @@
+# LAB-04 — DELIBERATELY INSECURE WORKFLOW. Lab use only. Do not copy into real repositories.
+# Weaknesses (find them before reading the README): template injection, excessive
+# permissions, mutable action tags, persisted credentials.
+name: pr-greeter
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+permissions: write-all
+
+jobs:
+  greet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - name: Greet the contributor
+        run: |
+          echo "Thanks for the PR: ${{ github.event.pull_request.title }}"
+          echo "Branch: ${{ github.head_ref }}"

@@ -1,0 +1,25 @@
+{
+  "properties": {
+    "displayName": "DT: Storage accounts must require TLS 1.2 or later and HTTPS",
+    "description": "Denies storage accounts that permit TLS below 1.2 or non-HTTPS traffic. Corrects the Appendix B alias (supportsHttpsTrafficOnly).",
+    "mode": "Indexed",
+    "metadata": { "category": "Storage", "version": "1.0.0", "source": "Defending Tomorrow labs" },
+    "parameters": {
+      "effect": { "type": "String", "allowedValues": ["Audit", "Deny", "Disabled"], "defaultValue": "Deny" }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          { "field": "type", "equals": "Microsoft.Storage/storageAccounts" },
+          {
+            "anyOf": [
+              { "field": "Microsoft.Storage/storageAccounts/minimumTlsVersion", "notIn": ["TLS1_2", "TLS1_3"] },
+              { "field": "Microsoft.Storage/storageAccounts/supportsHttpsTrafficOnly", "notEquals": true }
+            ]
+          }
+        ]
+      },
+      "then": { "effect": "[parameters('effect')]" }
+    }
+  }
+}

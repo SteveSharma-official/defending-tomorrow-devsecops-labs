@@ -1,0 +1,15 @@
+{
+  "properties": {
+    "displayName": "DT: Resources must carry a DataClassification tag",
+    "description": "Denies resources without a DataClassification tag (Chapter 8 data classification).",
+    "mode": "Indexed",
+    "metadata": { "category": "Tags", "version": "1.0.0", "source": "Defending Tomorrow labs" },
+    "parameters": {
+      "effect": { "type": "String", "allowedValues": ["Audit", "Deny", "Disabled"], "defaultValue": "Deny" }
+    },
+    "policyRule": {
+      "if": { "field": "tags['DataClassification']", "exists": false },
+      "then": { "effect": "[parameters('effect')]" }
+    }
+  }
+}

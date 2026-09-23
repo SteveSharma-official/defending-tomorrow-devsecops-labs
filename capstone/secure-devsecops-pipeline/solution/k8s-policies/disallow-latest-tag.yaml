@@ -1,0 +1,35 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-immutable-image-reference
+  annotations:
+    policies.kyverno.io/title: Require a digest or explicit non-latest tag
+spec:
+  background: true
+  rules:
+    - name: no-latest-tag
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      validate:
+        failureAction: Enforce
+        message: "Images must not use the mutable ':latest' tag or omit a tag (Chapter 13 — registry immutability)."
+        pattern:
+          spec:
+            containers:
+              - image: "*:* | *@sha256:*"
+            =(initContainers):
+              - image: "*:* | *@sha256:*"
+    - name: forbid-latest
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      validate:
+        failureAction: Enforce
+        message: "The ':latest' tag is not allowed."
+        pattern:
+          spec:
+            containers:
+              - image: "!*:latest"

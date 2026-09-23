@@ -1,0 +1,33 @@
+# LAB-08 — policy-as-code gate: test the policies, then evaluate the Terraform plan against them.
+name: policy-gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CONFTEST_VERSION: "0.62.0"
+  CONFTEST_SHA256: "284231908e4cf66d156e5577c3eee2f67d9f2edf2521fa2309e0df1969f871e5"
+
+jobs:
+  conftest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Conftest (checksum verified)
+        run: |
+          curl -sSLo conftest.tgz "https://github.com/open-policy-agent/conftest/releases/download/v${CONFTEST_VERSION}/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz"
+          echo "${CONFTEST_SHA256}  conftest.tgz" | sha256sum --check --strict
+          tar -xzf conftest.tgz conftest
+      - name: Unit-test the policies (policy is code — it gets tests)
+        run: ./conftest verify --policy policy --show-builtin-errors
+      - name: Evaluate the Terraform plan
+        run: ./conftest test plans/plan.json --policy policy --output github

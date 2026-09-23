@@ -1,0 +1,53 @@
+# Keeps this repository's own lab material honest: lints every (non-deliberately-insecure) workflow,
+# runs every policy and unit-test suite, and checks shell scripts. Runs read-only.
+name: validate-labs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 22 * * 1"     # weekly: catches upstream tool/platform drift
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - uses: open-policy-agent/setup-opa@b2b258e089860efaadaaf71bf6e3aecb4a3eeff1 # v2.4.0
+        with:
+          version: "1.20.2"
+      - name: Install validators (pinned)
+        run: pip install actionlint-py==1.7.12.25 zizmor==1.30.1 pytest==9.1.1 PyYAML==6.0.3 Flask==3.1.3 shellcheck-py==0.10.0.1
+      - name: Lint lab workflows (the LAB-04 deliberately insecure starter is excluded)
+        run: |
+          mapfile -t files < <(find . -path '*/.github/workflows/*.yml' -not -path './chapter-11/lab-04-harden-github-actions/starter/*' | sort)
+          actionlint "${files[@]}"
+          for f in "${files[@]}"; do zizmor --offline --min-severity medium "$f"; done
+      - name: Shell scripts
+        run: shellcheck shared/scripts/*.sh cloud/azure/az-lab-02-azure-policy-as-code/starter/scripts/*.sh
+      - name: Rego policy tests
+        run: |
+          opa check --strict chapter-17/lab-08-policy-as-code-conftest/starter/policy
+          opa test chapter-17/lab-08-policy-as-code-conftest/starter/policy
+          opa test chapter-11/lab-14-security-gates-environments/starter/policy
+          opa test chapter-31/lab-18-agent-tool-allowlist-opa/starter/policy chapter-31/lab-18-agent-tool-allowlist-opa/starter/data
+          opa test capstone/secure-devsecops-pipeline/solution/policy
+      - name: Python unit tests
+        run: |
+          pytest -q shared/sample-apps/dt-orders-api
+          pytest -q chapter-16/lab-15-ai-assisted-pr-gate/starter/tools/tests
+          pytest -q chapter-18/lab-16-compliance-evidence-pipeline/starter/tools/tests
+          pytest -q chapter-29/lab-19-llm-guardrail-regression/starter/tests
+          python chapter-04/lab-01-threat-model-as-code/starter/tools/check_threat_model.py chapter-04/lab-01-threat-model-as-code/solution/threat-model/threat-model.yaml
+          (cd cloud/azure/az-lab-02-azure-policy-as-code/starter && python tests/check_policies.py)

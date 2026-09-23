@@ -1,0 +1,75 @@
+# LAB-16 — continuous compliance evidence: run controls, map results to frameworks,
+# hash the record, attest it, retain it. The evidence is produced even when controls fail.
+name: evidence
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 20 * * 0"     # weekly evidence even without code change
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GITLEAKS_VERSION: "8.28.0"
+  GITLEAKS_SHA256: "a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb"
+
+jobs:
+  collect-and-record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write         # sign the evidence attestation
+      attestations: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Install control tooling (pinned)
+        run: |
+          pip install pip-audit==2.10.1 checkov==3.3.19 pytest==9.1.1 PyYAML==6.0.3 -r app/requirements.txt
+          curl -sSLo gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  gitleaks.tgz" | sha256sum --check --strict
+          tar -xzf gitleaks.tgz gitleaks
+      - name: Unit-test the evidence builder
+        run: pytest -q tools/tests
+      - name: Run controls (failures are recorded, not hidden)
+        run: |
+          mkdir -p results
+          pip-audit -r app/requirements.txt -f json -o results/pip-audit.json || true
+          ./gitleaks git . --redact --no-banner --report-format json --report-path results/gitleaks.json || true
+          checkov -d infra --framework terraform -o json --quiet > results/checkov.json || true
+          pytest -q app --junitxml=results/pytest.xml || true
+      - name: Build evidence record
+        id: evidence
+        run: |
+          set +e
+          python tools/build_evidence.py results controls/mapping.yaml evidence.json
+          echo "exit=$?" >> "$GITHUB_OUTPUT"
+      - name: Verify evidence integrity
+        run: python tools/verify_evidence.py evidence.json
+      - name: Attest the evidence record (who produced it, from which commit)
+        if: github.event_name != 'pull_request'
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: evidence.json
+      - name: Retain evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: evidence-${{ github.run_id }}
+          path: |
+            evidence.json
+            results/
+          retention-days: 90
+      - name: Compliance gate (blocking controls must pass)
+        env:
+          EVIDENCE_EXIT: ${{ steps.evidence.outputs.exit }}
+        run: test "$EVIDENCE_EXIT" = "0"

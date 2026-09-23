@@ -1,0 +1,20 @@
+{
+  "properties": {
+    "displayName": "DT: Key Vaults must use the Azure RBAC permission model",
+    "description": "Denies Key Vaults that use legacy access policies instead of Azure RBAC. Chapter 6 / Appendix B.2.",
+    "mode": "Indexed",
+    "metadata": { "category": "Key Vault", "version": "1.0.0", "source": "Defending Tomorrow labs" },
+    "parameters": {
+      "effect": { "type": "String", "allowedValues": ["Audit", "Deny", "Disabled"], "defaultValue": "Deny" }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          { "field": "type", "equals": "Microsoft.KeyVault/vaults" },
+          { "field": "Microsoft.KeyVault/vaults/enableRbacAuthorization", "notEquals": true }
+        ]
+      },
+      "then": { "effect": "[parameters('effect')]" }
+    }
+  }
+}

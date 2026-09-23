@@ -1,0 +1,34 @@
+# LAB-16 — one technical control, many framework references (Chapter 18 §18.4 Unified Control Mapping).
+# References checked against the published framework texts (NIST CSF 2.0, ISO/IEC 27001:2022 Annex A,
+# ACSC Essential Eight). VERIFY CURRENT PRODUCT BEHAVIOUR is not needed here, but mappings are
+# interpretive: have your GRC function confirm them before relying on them for audit.
+controls:
+  DT-VULN-01:
+    title: Third-party components have no known vulnerabilities at build time
+    tool: pip-audit
+    blocking: true
+    frameworks:
+      nist_csf_2: ["ID.RA-01"]
+      iso27001_2022: ["A.8.8"]
+      essential_eight: ["Patch applications"]
+  DT-SECRET-01:
+    title: No credentials are committed to source control
+    tool: gitleaks
+    blocking: true
+    frameworks:
+      nist_csf_2: ["PR.AA-01"]
+      iso27001_2022: ["A.5.17"]
+  DT-IAC-01:
+    title: Infrastructure definitions meet the secure configuration baseline
+    tool: checkov
+    blocking: true
+    frameworks:
+      nist_csf_2: ["PR.PS-01"]
+      iso27001_2022: ["A.8.9"]
+  DT-TEST-01:
+    title: Security regression tests pass
+    tool: pytest
+    blocking: true
+    frameworks:
+      nist_csf_2: ["PR.PS-06"]
+      iso27001_2022: ["A.8.28", "A.8.29"]

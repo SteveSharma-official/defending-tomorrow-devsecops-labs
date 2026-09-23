@@ -1,0 +1,101 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  AWS-LAB-01 (Defending Tomorrow) - keyless GitHub Actions access to one ECR repository.
+  Creates (optionally) the GitHub OIDC provider, a role whose trust policy is scoped to ONE
+  repository and ONE branch, and an ECR repository with immutable tags and scan-on-push.
+
+Parameters:
+  GitHubOrg:
+    Type: String
+    Description: GitHub user or organisation that owns the lab repository (case-sensitive as shown in the URL)
+  GitHubRepo:
+    Type: String
+    Default: dt-aws-lab-01
+  AllowedBranch:
+    Type: String
+    Default: main
+  CreateOidcProvider:
+    Type: String
+    AllowedValues: ["true", "false"]
+    Default: "true"
+    Description: Set to false if token.actions.githubusercontent.com already exists in this account
+  EcrRepositoryName:
+    Type: String
+    Default: dt-aws-lab-01/dt-orders-api
+
+Conditions:
+  MakeProvider: !Equals [!Ref CreateOidcProvider, "true"]
+
+Resources:
+  GitHubOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Condition: MakeProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+
+  Repository:
+    Type: AWS::ECR::Repository
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_136
+            comment: Lab uses AWS-managed AES256 to avoid a monthly customer-managed KMS key charge; production registries should use a CMK (Chapter 8)
+    Properties:
+      RepositoryName: !Ref EcrRepositoryName
+      ImageTagMutability: IMMUTABLE
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      EncryptionConfiguration:
+        EncryptionType: AES256
+      EmptyOnDelete: true
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {"rules":[{"rulePriority":1,"description":"Keep 10 images","selection":{"tagStatus":"any","countType":"imageCountMoreThan","countNumber":10},"action":{"type":"expire"}}]}
+
+  PushRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub dt-aws-lab-01-github-push-${AWS::Region}
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: GitHubActionsOneRepoOneBranch
+            Effect: Allow
+            Principal:
+              Federated: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/${AllowedBranch}
+      Policies:
+        - PolicyName: ecr-push-one-repository
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: RegistryLogin
+                Effect: Allow
+                Action: ecr:GetAuthorizationToken
+                Resource: "*"
+              - Sid: PushAndReadFindingsForThisRepositoryOnly
+                Effect: Allow
+                Action:
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:InitiateLayerUpload
+                  - ecr:UploadLayerPart
+                  - ecr:CompleteLayerUpload
+                  - ecr:PutImage
+                  - ecr:BatchGetImage
+                  - ecr:DescribeImages
+                  - ecr:DescribeImageScanFindings
+                Resource: !GetAtt Repository.Arn
+
+Outputs:
+  RoleArn:
+    Description: Store as repository variable AWS_ROLE_ARN (not a secret - it is not a credential)
+    Value: !GetAtt PushRole.Arn
+  RepositoryUri:
+    Value: !GetAtt Repository.RepositoryUri

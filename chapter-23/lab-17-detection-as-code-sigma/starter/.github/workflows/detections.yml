@@ -1,0 +1,37 @@
+# LAB-17 — detection-as-code: lint, unit-test and convert Sigma rules on every change.
+name: detections
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sigma:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - run: pip install sigma-cli==3.1.0 pySigma-backend-splunk==2.1.0 pytest==9.1.1 PyYAML==6.0.3
+      - name: Validate rules (schema, status, condition, ATT&CK tags)
+        run: sigma check rules/
+      - name: Unit-test rule logic against true- and false-positive events
+        working-directory: tests
+        run: pytest -q
+      - name: Convert to SIEM queries (Splunk SPL shown; swap the backend for your SIEM)
+        run: |
+          sigma convert -t splunk --without-pipeline rules/ | tee detections.spl
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: converted-detections
+          path: detections.spl
+          retention-days: 14

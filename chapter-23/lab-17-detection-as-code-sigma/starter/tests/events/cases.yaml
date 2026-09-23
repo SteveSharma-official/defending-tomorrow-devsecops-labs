@@ -1,0 +1,21 @@
+# Detection unit tests: each case names a rule, an event and whether the rule must match.
+- rule: aws_cloudtrail_logging_disabled.yml
+  name: attacker stops logging
+  expect: match
+  event: {eventSource: cloudtrail.amazonaws.com, eventName: StopLogging, userIdentity: {arn: "arn:aws:sts::111122223333:assumed-role/compromised-dev/session"}}
+- rule: aws_cloudtrail_logging_disabled.yml
+  name: control tower automation is filtered
+  expect: no_match
+  event: {eventSource: cloudtrail.amazonaws.com, eventName: UpdateTrail, userIdentity: {arn: "arn:aws:sts::111122223333:assumed-role/AWSControlTowerExecution"}}
+- rule: aws_cloudtrail_logging_disabled.yml
+  name: benign read
+  expect: no_match
+  event: {eventSource: cloudtrail.amazonaws.com, eventName: DescribeTrails, userIdentity: {arn: "arn:aws:sts::111122223333:assumed-role/auditor/s"}}
+- rule: github_ruleset_or_protection_removed.yml
+  name: ruleset deleted
+  expect: match
+  event: {action: repository_ruleset.destroy, actor: someone, repo: acme/payments}
+- rule: github_ruleset_or_protection_removed.yml
+  name: ruleset created
+  expect: no_match
+  event: {action: repository_ruleset.create, actor: someone, repo: acme/payments}

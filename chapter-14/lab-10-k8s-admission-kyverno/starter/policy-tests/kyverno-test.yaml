@@ -1,0 +1,18 @@
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: lab-10-policy-tests
+policies:
+  - ../policies/pod-security-restricted.yaml
+  - ../policies/disallow-latest-tag.yaml
+  - ../policies/require-resource-limits.yaml
+resources:
+  - resources/good-pod.yaml
+  - resources/bad-pod.yaml
+results:
+  - {policy: pod-security-restricted, rule: restricted, resources: [good-pod], kind: Pod, result: pass}
+  - {policy: pod-security-restricted, rule: restricted, resources: [bad-pod], kind: Pod, result: fail}
+  - {policy: require-immutable-image-reference, rule: forbid-latest, resources: [good-pod], kind: Pod, result: pass}
+  - {policy: require-immutable-image-reference, rule: forbid-latest, resources: [bad-pod], kind: Pod, result: fail}
+  - {policy: require-resource-limits, rule: cpu-memory-limits, resources: [good-pod], kind: Pod, result: pass}
+  - {policy: require-resource-limits, rule: cpu-memory-limits, resources: [bad-pod], kind: Pod, result: fail}

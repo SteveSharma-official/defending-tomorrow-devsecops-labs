@@ -1,0 +1,7 @@
+# LAB-03 Layer 1 — developer workstation. Install with: pip install pre-commit && pre-commit install
+# Pin 'rev' to a released tag; pre-commit records the resolved commit in its cache.
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.28.0
+    hooks:
+      - id: gitleaks

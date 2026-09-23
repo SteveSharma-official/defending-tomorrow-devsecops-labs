@@ -1,0 +1,46 @@
+# LAB-15 — tiered review gate for AI-assisted pull requests (Chapter 16 §16.4.2).
+name: ai-pr-gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+  pull_request_review:
+    types: [submitted, dismissed]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # The gate code comes from the BASE branch so a PR cannot weaken its own gate.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Unit-test the gate
+        run: pip install pytest==9.1.1 && pytest -q tools/tests
+      - name: Collect PR facts from the GitHub API
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR}" > pr.json
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${PR}/files" --jq '.[].filename' > files.txt
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${PR}/reviews" \
+            --jq '.[] | {user: .user.login, state: .state, submitted_at: .submitted_at}' > reviews.jsonl
+          jq -n --slurpfile pr pr.json --rawfile files files.txt --slurpfile reviews reviews.jsonl '{
+              author: $pr[0].user.login,
+              labels: [$pr[0].labels[].name],
+              files: ($files | split("\n") | map(select(length > 0))),
+              reviews: $reviews
+            }' > gate-input.json
+          cat gate-input.json
+      - name: Evaluate the AI-assisted review tier
+        run: python tools/ai_pr_gate.py gate-input.json .github/security-reviewers.txt

@@ -1,0 +1,30 @@
+# LAB-04 solution — the same behaviour, hardened.
+name: pr-greeter
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+permissions: {}            # nothing at workflow level; grant per job
+
+jobs:
+  greet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Greet the contributor
+        # Untrusted input is passed through the environment, never interpolated into the script.
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          printf 'Thanks for the PR: %s\n' "$PR_TITLE"
+          printf 'Branch: %s\n' "$HEAD_REF"

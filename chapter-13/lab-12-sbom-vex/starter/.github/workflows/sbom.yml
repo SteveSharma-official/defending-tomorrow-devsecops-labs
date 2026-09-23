@@ -1,0 +1,63 @@
+# LAB-12 — generate SBOMs for the container image, scan the SBOM, and apply VEX statements.
+name: sbom
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: dt-orders-api:${{ github.sha }}
+  GRYPE_VERSION: "0.119.0"
+  GRYPE_SHA256: "3fa2dc4b924621ab65404cf08d0b8438d896d80ab949c9d5a4ca283c36004c9b"
+
+jobs:
+  sbom:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build image (local only)
+        run: docker build -t "$IMAGE" app
+
+      - name: Generate CycloneDX SBOM (Syft)
+        uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
+        with:
+          image: ${{ env.IMAGE }}
+          format: cyclonedx-json
+          output-file: sbom.cdx.json
+          upload-artifact: false
+
+      - name: Generate SPDX SBOM (Syft)
+        uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
+        with:
+          image: ${{ env.IMAGE }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+          upload-artifact: false
+
+      - name: Keep SBOMs as build evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom-${{ github.sha }}
+          path: sbom.*.json
+          retention-days: 30
+
+      - name: Install Grype (checksum verified)
+        run: |
+          curl -sSLo grype.tgz "https://github.com/anchore/grype/releases/download/v${GRYPE_VERSION}/grype_${GRYPE_VERSION}_linux_amd64.tar.gz"
+          echo "${GRYPE_SHA256}  grype.tgz" | sha256sum --check --strict
+          tar -xzf grype.tgz grype
+
+      - name: Scan the SBOM — fail on fixable HIGH/CRITICAL, honouring reviewed VEX statements
+        run: |
+          VEX_ARGS=()
+          for f in vex/*.json; do [ -e "$f" ] && VEX_ARGS+=(--vex "$f"); done
+          ./grype sbom:sbom.cdx.json --only-fixed --fail-on high "${VEX_ARGS[@]}"

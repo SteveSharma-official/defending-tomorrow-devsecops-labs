@@ -1,0 +1,29 @@
+title: AWS CloudTrail Logging Disabled or Trail Deleted
+id: 6e1b6a52-2f0e-4f6b-9a38-0c1d5c1b7a01
+status: test
+description: >-
+  Detects API calls that stop, delete or reconfigure a CloudTrail trail — a common
+  defence-evasion step after credential compromise (Chapter 23; Appendix A.1 SCP guardrail).
+references:
+  - https://attack.mitre.org/techniques/T1562/008/
+author: Defending Tomorrow labs
+date: 2026-09-23
+tags:
+  - attack.defense-evasion
+  - attack.t1562.008
+logsource:
+  product: aws
+  service: cloudtrail
+detection:
+  selection:
+    eventSource: cloudtrail.amazonaws.com
+    eventName:
+      - StopLogging
+      - DeleteTrail
+      - UpdateTrail
+  filter_landing_zone_automation:
+    userIdentity.arn|endswith: ':assumed-role/AWSControlTowerExecution'
+  condition: selection and not filter_landing_zone_automation
+falsepositives:
+  - Approved landing-zone automation not covered by the filter
+level: high

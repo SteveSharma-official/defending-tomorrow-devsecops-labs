@@ -1,0 +1,37 @@
+# CAPSTONE — starter skeleton. Build the full pipeline by completing TASK 1–10 (see capstone README).
+# Reference implementations for every task exist in the earlier labs; the complete answer is in
+# capstone/secure-devsecops-pipeline/solution/.github/workflows/secure-pipeline.yml — try first, then compare.
+name: secure-pipeline
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  # TASK 1 (LAB-01): threat_model  — gate on tools/check_threat_model.py
+  threat_model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with: {python-version: "3.13"}
+      - run: pip install PyYAML==6.0.3 && python tools/check_threat_model.py threat-model/threat-model.yaml
+
+  # TASK 2 (LAB-04): workflow_lint — actionlint + zizmor (fail on medium+)
+  # TASK 3 (LAB-03): secrets       — checksum-verified gitleaks over full history
+  # TASK 4 (LAB-05): sast          — Semgrep with .semgrep/ rules (optionally CodeQL in a separate workflow)
+  # TASK 5 (LAB-06): sca           — dependency-review (PRs) + pip-audit
+  # TASK 6 (LAB-00): tests         — pytest app (includes the SQL-injection regression test)
+  # TASK 7 (LAB-10): k8s_policy    — kyverno test policy-tests + kyverno apply k8s-policies/ --resource k8s/
+  # TASK 8 (LAB-09/11/12/13): build_scan — build, artefact gates, ZAP baseline, Trivy, SBOM;
+  #                                on main: push by digest, attest provenance + SBOM, cosign sign
+  # TASK 9 (LAB-14): release_decision — OPA policy in policy/release over toJSON(needs)
+  # TASK 10 (LAB-16): evidence    — tools/pipeline_evidence.py + verify + attest + upload (always runs)
+  # Then: deploy_staging (verify attestations/signature before "deploying") and deploy_production (environment approval).

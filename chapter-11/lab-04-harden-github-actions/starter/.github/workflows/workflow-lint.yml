@@ -1,0 +1,39 @@
+# LAB-04 — the security control: lint every workflow for security weaknesses.
+name: workflow-lint
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Install linters (pinned versions)
+        run: pip install zizmor==1.30.1 actionlint-py==1.7.12.25
+      - name: actionlint (correctness)
+        run: actionlint -color
+      - name: zizmor (security) — SARIF for code scanning
+        run: zizmor --offline --format sarif .github/workflows/ > zizmor.sarif || true
+      - uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
+        if: always()
+        with:
+          sarif_file: zizmor.sarif
+          category: zizmor
+      - name: zizmor gate — fail on medium or higher
+        run: zizmor --offline --min-severity medium .github/workflows/

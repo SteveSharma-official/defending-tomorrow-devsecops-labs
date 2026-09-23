@@ -1,0 +1,7 @@
+# LAB-02 — CODEOWNERS: changes to these paths require review by the named owner
+# when the ruleset enables "Require review from Code Owners".
+# Replace @YOUR-GITHUB-USERNAME with your username (or a team, e.g. @my-org/security-team).
+.github/                @YOUR-GITHUB-USERNAME
+.gitmodules             @YOUR-GITHUB-USERNAME
+governance/             @YOUR-GITHUB-USERNAME
+*.tf                    @YOUR-GITHUB-USERNAME

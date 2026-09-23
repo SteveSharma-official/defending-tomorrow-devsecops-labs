@@ -1,0 +1,116 @@
+# LAB-14 — multi-stage pipeline: parallel security checks → policy decision → staged deployment
+# behind GitHub Environments (required reviewer on production). Deployments are simulated.
+name: pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pipeline-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  GITLEAKS_VERSION: "8.28.0"
+  GITLEAKS_SHA256: "a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb"
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with: {python-version: "3.13"}
+      - run: pip install -r app/requirements.txt -r app/requirements-dev.txt
+      - run: pytest -q app
+
+  sast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with: {python-version: "3.13"}
+      - run: pip install semgrep==1.177.0
+      - run: semgrep scan --config .semgrep/ --metrics=off --error --severity ERROR app/
+
+  sca:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with: {python-version: "3.13"}
+      - run: pip install pip-audit==2.10.1
+      - run: pip-audit -r app/requirements.txt
+
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {fetch-depth: 0, persist-credentials: false}
+      - run: |
+          curl -sSLo gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  gitleaks.tgz" | sha256sum --check --strict
+          tar -xzf gitleaks.tgz gitleaks
+          ./gitleaks git . --redact --no-banner
+
+  release-decision:
+    needs: [tests, sast, sca, secrets]
+    if: always()                       # evaluate even when a check failed, so the decision is recorded
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      allow: ${{ steps.decide.outputs.allow }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {persist-credentials: false}
+      - uses: open-policy-agent/setup-opa@b2b258e089860efaadaaf71bf6e3aecb4a3eeff1 # v2.4.0
+        with: {version: "1.20.2"}
+      - name: Unit-test the release policy
+        run: opa test policy -v
+      - name: Build decision input from job results
+        env:
+          TESTS: ${{ needs.tests.result }}
+          SAST: ${{ needs.sast.result }}
+          SCA: ${{ needs.sca.result }}
+          SECRETS: ${{ needs.secrets.result }}
+        run: |
+          jq -n --arg t "$TESTS" --arg s "$SAST" --arg c "$SCA" --arg k "$SECRETS" --arg ref "$GITHUB_REF" \
+            '{checks: {tests: $t, sast: $s, sca: $c, secrets: $k}, environment: "production", ref: $ref}' > decision-input.json
+          cat decision-input.json
+      - name: Evaluate release policy
+        id: decide
+        run: |
+          opa eval -f pretty -d policy -i decision-input.json 'data.release.violations'
+          allow=$(opa eval -f raw -d policy -i decision-input.json 'data.release.allow')
+          echo "allow=${allow}" >> "$GITHUB_OUTPUT"
+          echo "Release allowed: ${allow}"
+          [ "$allow" = "true" ]
+
+  deploy-staging:
+    needs: release-decision
+    if: needs.release-decision.outputs.allow == 'true' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: staging
+    steps:
+      - run: echo "Simulated deployment of ${GITHUB_SHA} to staging"
+
+  deploy-production:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: production           # protection rules: required reviewer + main-only branch policy
+    steps:
+      - run: echo "Simulated deployment of ${GITHUB_SHA} to production"

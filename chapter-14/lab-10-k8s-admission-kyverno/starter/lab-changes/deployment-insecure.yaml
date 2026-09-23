@@ -1,0 +1,14 @@
+# LAB-10 Step 7 — INTENTIONALLY INSECURE. Save as k8s/debug-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: debug-toolbox
+  namespace: dt-lab
+spec:
+  hostNetwork: true
+  containers:
+    - name: toolbox
+      image: busybox:latest
+      command: ["sleep", "3600"]
+      securityContext:
+        privileged: true

@@ -1,0 +1,40 @@
+# LAB-18 — agent tool-allowlist policy: format, strict-check, unit-test with coverage, and replay
+# recorded tool calls (including a prompt-injected one) as regression evidence.
+name: agent-policy
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  opa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: open-policy-agent/setup-opa@b2b258e089860efaadaaf71bf6e3aecb4a3eeff1 # v2.4.0
+        with:
+          version: "1.20.2"
+      - name: Formatting and strict compilation
+        run: |
+          test -z "$(opa fmt --list policy)" || { echo "::error::Run 'opa fmt -w policy'"; exit 1; }
+          opa check --strict policy data
+      - name: Unit tests with coverage threshold
+        run: |
+          opa test policy data -v
+          opa test policy data --coverage --threshold 90
+      - name: Replay recorded requests — each must be DENIED
+        run: |
+          for f in requests/*.json; do
+            allowed=$(opa eval -f raw -d policy -d data -i "$f" 'data.agent.tools.allow')
+            echo "$f -> allow=${allowed}"
+            opa eval -f pretty -d policy -d data -i "$f" 'data.agent.tools.deny_reasons'
+            [ "$allowed" = "false" ] || { echo "::error::${f} was allowed"; exit 1; }
+          done

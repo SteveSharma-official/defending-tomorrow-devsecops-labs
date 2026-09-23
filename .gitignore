@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+*.db
+.pytest_cache/
+config/test-credentials.env
+*.sarif

@@ -1,0 +1,66 @@
+# LAB-09 — build, lint, verify runtime identity and scan the container image.
+name: container
+
+on:
+  pull_request:
+    paths: ["app/**", ".github/workflows/container.yml", ".hadolint.yaml"]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: dt-orders-api:${{ github.sha }}
+  TRIVY_VERSION: "0.70.0"
+  TRIVY_SHA256: "8b4376d5d6befe5c24d503f10ff136d9e0c49f9127a4279fd110b727929a5aa9"
+
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Lint Dockerfile (hadolint)
+        uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
+        with:
+          dockerfile: app/Dockerfile
+          config: .hadolint.yaml
+
+      - name: Build image (local only — nothing is pushed)
+        run: docker build --pull -t "$IMAGE" app
+
+      - name: Runtime identity gate — image must not run as root
+        run: |
+          user=$(docker image inspect --format '{{.Config.User}}' "$IMAGE")
+          echo "Configured user: '${user}'"
+          case "$user" in
+            ""|"0"|"root"|"0:0"|"root:root") echo "::error::Image runs as root"; exit 1 ;;
+          esac
+
+      - name: Secrets-in-image gate — no credential-like ENV variables
+        run: |
+          if docker image inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$IMAGE" \
+             | grep -Ei '^[A-Z_]*(TOKEN|SECRET|PASSWORD|API_KEY)[A-Z_]*='; then
+            echo "::error::Credential-like environment variable baked into the image"; exit 1
+          fi
+
+      - name: Smoke test the running container
+        run: |
+          docker run -d --name smoke --read-only --tmpfs /tmp --cap-drop ALL \
+            --security-opt no-new-privileges -p 8080:8080 "$IMAGE"
+          for _ in $(seq 1 20); do curl -fsS http://127.0.0.1:8080/health && break; sleep 1; done
+          docker rm -f smoke
+
+      - name: Install Trivy (checksum verified)
+        run: |
+          curl -sSLo trivy.tgz "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          echo "${TRIVY_SHA256}  trivy.tgz" | sha256sum --check --strict
+          tar -xzf trivy.tgz trivy
+
+      - name: Scan image — fail on fixable HIGH/CRITICAL vulnerabilities and embedded secrets
+        run: ./trivy image --scanners vuln,secret --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 "$IMAGE"

@@ -1,0 +1,21 @@
+rules:
+  - id: dt-python-sql-built-from-string
+    languages: [python]
+    severity: ERROR
+    message: >-
+      SQL statement built with string formatting or concatenation and passed to
+      execute(). Use a parameterised query: execute("... WHERE x = ?", (value,)).
+    metadata:
+      cwe: "CWE-89: Improper Neutralization of Special Elements used in an SQL Command"
+      owasp: "A03:2021 - Injection"
+      book-reference: "Defending Tomorrow, Chapter 19 / LAB-05"
+    patterns:
+      - pattern-either:
+          - pattern: $CONN.execute(f"...", ...)
+          - pattern: $CONN.execute(f"...")
+          - pattern: $CONN.execute("..." + $X, ...)
+          - pattern: $CONN.execute("..." + $X)
+          - pattern: $CONN.execute("..." % $X, ...)
+          - pattern: $CONN.execute("..." % $X)
+          - pattern: $CONN.execute("...".format(...), ...)
+          - pattern: $CONN.execute("...".format(...))

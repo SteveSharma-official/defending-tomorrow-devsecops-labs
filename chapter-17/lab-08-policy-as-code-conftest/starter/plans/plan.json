@@ -1,0 +1,25 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.10.0",
+  "_comment": "Synthetic, trimmed plan in the `terraform show -json` shape for LAB-08. Generate a real one with: terraform plan -out tf.plan && terraform show -json tf.plan > plans/plan.json",
+  "resource_changes": [
+    {
+      "address": "aws_kms_key.evidence",
+      "type": "aws_kms_key",
+      "name": "evidence",
+      "change": {"actions": ["create"], "after": {"enable_key_rotation": true, "deletion_window_in_days": 7}}
+    },
+    {
+      "address": "aws_s3_bucket.evidence",
+      "type": "aws_s3_bucket",
+      "name": "evidence",
+      "change": {"actions": ["create"], "after": {"bucket": "dt-lab-08-evidence", "tags": {"CostCenter": "security-lab", "DataClassification": "internal"}}}
+    },
+    {
+      "address": "aws_security_group.web",
+      "type": "aws_security_group",
+      "name": "web",
+      "change": {"actions": ["create"], "after": {"name": "dt-lab-08-web", "ingress": [{"cidr_blocks": ["0.0.0.0/0"], "from_port": 443, "to_port": 443, "protocol": "tcp"}]}}
+    }
+  ]
+}

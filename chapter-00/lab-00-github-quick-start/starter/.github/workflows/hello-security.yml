@@ -1,0 +1,36 @@
+# LAB-00 — your first security-aware workflow.
+name: hello-security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Least privilege: this workflow only needs to read the repository.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Actions are pinned to a full commit SHA (the comment records the human-readable tag).
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Install dependencies
+        working-directory: app
+        run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Run unit and security regression tests
+        working-directory: app
+        run: pytest -q
+      - name: Show what the pipeline knows about itself
+        run: |
+          echo "Repository: ${GITHUB_REPOSITORY}"
+          echo "Commit:     ${GITHUB_SHA}"
+          echo "Triggered by event: ${GITHUB_EVENT_NAME}"

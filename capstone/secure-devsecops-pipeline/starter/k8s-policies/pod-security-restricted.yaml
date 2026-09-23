@@ -1,0 +1,23 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: pod-security-restricted
+  annotations:
+    policies.kyverno.io/title: Enforce Pod Security Standards (restricted)
+    policies.kyverno.io/description: >-
+      Applies the Kubernetes Pod Security Standards "restricted" profile at admission
+      (Chapter 14 §14.5, Appendix C.1). Complements, and does not replace, the built-in
+      Pod Security Admission namespace labels.
+spec:
+  background: true
+  rules:
+    - name: restricted
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      validate:
+        failureAction: Enforce
+        podSecurity:
+          level: restricted
+          version: latest

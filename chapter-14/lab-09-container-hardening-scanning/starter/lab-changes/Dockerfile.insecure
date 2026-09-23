@@ -1,0 +1,10 @@
+# LAB-09 Step 7 — INTENTIONALLY INSECURE Dockerfile. Copy over app/Dockerfile for the exercise only.
+# Weaknesses: end-of-life base image, single stage with build tooling, runs as root,
+# unpinned pip installs, writable application files, secret baked into an ENV layer.
+FROM python:3.8
+WORKDIR /app
+COPY . .
+RUN pip install -r requirements.txt
+ENV ADMIN_TOKEN=lab-synthetic-token-not-real
+EXPOSE 8080
+CMD ["python", "app.py"]

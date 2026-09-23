@@ -1,0 +1,31 @@
+# AZ-LAB-02 — policy definitions are code: validate structure and fixtures on every PR.
+# Deployment of definitions needs subscription-level rights, so it is a reviewed, human-run step
+# (least privilege: the CI identity from AZ-LAB-01 is scoped to one resource group).
+name: policy-ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Structural checks on policy definitions
+        run: python3 tests/check_policies.py
+      - name: Compile test fixtures
+        run: |
+          az bicep install
+          az bicep build --file tests/compliant-storage.bicep --stdout > /dev/null
+          az bicep build --file tests/noncompliant-storage.bicep --stdout > /dev/null
+      - name: Lint deployment script
+        run: shellcheck scripts/deploy-policies.sh

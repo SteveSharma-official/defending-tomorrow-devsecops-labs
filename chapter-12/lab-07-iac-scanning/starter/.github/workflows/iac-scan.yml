@@ -1,0 +1,55 @@
+# LAB-07 — scan Infrastructure as Code before it can ever be applied (Chapter 12, IaC-SCF Stage 2).
+name: iac-scan
+
+on:
+  pull_request:
+    paths: ["infra/**", ".github/workflows/iac-scan.yml"]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TRIVY_VERSION: "0.70.0"
+  # Official SHA-256 from trivy_0.70.0_checksums.txt (Trivy release 0.69.4 was malicious — always verify)
+  TRIVY_SHA256: "8b4376d5d6befe5c24d503f10ff136d9e0c49f9127a4279fd110b727929a5aa9"
+
+jobs:
+  checkov:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - run: pip install checkov==3.3.19
+      - name: Checkov (fails on any unsuppressed failed check)
+        run: checkov -d infra --framework terraform --compact -o cli -o sarif --output-file-path console,checkov.sarif
+      - uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
+        if: always() && hashFiles('checkov.sarif') != ''
+        with:
+          sarif_file: checkov.sarif
+          category: checkov
+
+  trivy-config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Trivy (checksum verified)
+        run: |
+          curl -sSLo trivy.tgz "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          echo "${TRIVY_SHA256}  trivy.tgz" | sha256sum --check --strict
+          tar -xzf trivy.tgz trivy
+      - name: Trivy misconfiguration scan (fails on HIGH/CRITICAL)
+        run: ./trivy config --severity HIGH,CRITICAL --exit-code 1 infra

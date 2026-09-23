@@ -1,0 +1,7 @@
+# LAB-15 Step 7 — save as app/auth/token_check.py (simulates an AI-generated change to a security-critical path)
+import hmac
+
+
+def token_matches(presented: str, expected: str) -> bool:
+    """Constant-time comparison generated with an AI coding assistant — requires security review."""
+    return hmac.compare_digest(presented.encode(), expected.encode())

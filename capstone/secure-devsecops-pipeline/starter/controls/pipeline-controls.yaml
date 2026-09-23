@@ -1,0 +1,9 @@
+# CAPSTONE — pipeline job → control → framework references (interpretive; confirm with your GRC function).
+threat_model:  {control: DT-TM-01,     title: "Architecture changes are threat-modelled",         nist_csf_2: [ID.RA-04],  iso27001_2022: [A.8.27]}
+workflow_lint: {control: DT-CICD-01,   title: "Pipeline definitions are free of known weaknesses", nist_csf_2: [PR.PS-06], iso27001_2022: [A.8.25]}
+secrets:       {control: DT-SECRET-01, title: "No credentials in source control",                  nist_csf_2: [PR.AA-01], iso27001_2022: [A.5.17]}
+sast:          {control: DT-SAST-01,   title: "Code meets secure-coding rules",                    nist_csf_2: [PR.PS-06], iso27001_2022: [A.8.28]}
+sca:           {control: DT-VULN-01,   title: "No known-vulnerable components",                   nist_csf_2: [ID.RA-01], iso27001_2022: [A.8.8]}
+tests:         {control: DT-TEST-01,   title: "Security regression tests pass",                   nist_csf_2: [PR.PS-06], iso27001_2022: [A.8.29]}
+k8s_policy:    {control: DT-K8S-01,    title: "Workload manifests meet PSS restricted",           nist_csf_2: [PR.PS-01], iso27001_2022: [A.8.9]}
+build_scan:    {control: DT-IMG-01,    title: "Image hardened, scanned, SBOM produced, DAST clean", nist_csf_2: [ID.RA-01, PR.PS-02], iso27001_2022: [A.8.8, A.8.29]}

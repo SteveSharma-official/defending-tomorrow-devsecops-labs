@@ -1,0 +1,7 @@
+# Paste these entries into threat-model.yaml (Step 7).
+# trust_boundaries:
+  - {id: TB6, name: "Orders service → AI support agent (LLM)"}
+  - {id: TB7, name: "AI support agent → MCP tool server"}
+# data_flows:
+  - {id: DF6, from: orders-service, to: support-agent, crosses: TB6}
+  - {id: DF7, from: support-agent, to: mcp-orders-tool, crosses: TB7}

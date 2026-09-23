@@ -1,0 +1,18 @@
+{
+  "bindings": {
+    "support-agent-v1": {
+      "owner": "customer-support-platform",
+      "tools": {
+        "orders.lookup": {"max_calls_per_hour": 200, "params": {"customer": {"pattern": "^[a-z]{1,32}$"}}},
+        "kb.search": {"max_calls_per_hour": 500, "params": {}},
+        "tickets.comment": {"max_calls_per_hour": 50, "write": true, "params": {"ticket_id": {"pattern": "^TCK-[0-9]{1,8}$"}}}
+      }
+    },
+    "remediation-agent-v1": {
+      "owner": "ai-security-engineering",
+      "tools": {
+        "k8s.rollback_deployment": {"max_calls_per_hour": 5, "write": true, "params": {"namespace": {"allowed": ["dt-lab", "staging"]}}}
+      }
+    }
+  }
+}

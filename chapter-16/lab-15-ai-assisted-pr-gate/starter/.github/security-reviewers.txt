@@ -1,0 +1,3 @@
+# GitHub usernames allowed to give the security approval required by the AI-assisted PR gate.
+# One per line. Replace with real reviewers (never the only author of the change).
+YOUR-GITHUB-USERNAME

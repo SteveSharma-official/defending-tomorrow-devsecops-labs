@@ -1,0 +1,115 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  AWS-LAB-02 (Defending Tomorrow) - OIDC role for the Terraform pipeline, a state bucket, and
+  least-privilege permissions limited to resources named dt-aws-lab-02-*. Requires the GitHub
+  OIDC provider from AWS-LAB-01 (or create it first).
+
+Parameters:
+  GitHubOrg:
+    Type: String
+  GitHubRepo:
+    Type: String
+    Default: dt-aws-lab-02
+
+Resources:
+  StateBucket:
+    Type: AWS::S3::Bucket
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_18
+            comment: Lab state bucket; access logging is out of scope (Chapter 22 covers central logging)
+          - id: CKV_AWS_21
+            comment: Versioning enabled below; false positive guard not needed
+    Properties:
+      BucketName: !Sub dt-aws-lab-02-tfstate-${AWS::AccountId}
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+
+  TerraformRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub dt-aws-lab-02-terraform-${AWS::Region}
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                # plan on PRs and main; apply is further restricted by the GitHub 'aws-sandbox' environment
+                token.actions.githubusercontent.com:sub:
+                  - !Sub repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/main
+                  - !Sub repo:${GitHubOrg}/${GitHubRepo}:pull_request
+                  - !Sub repo:${GitHubOrg}/${GitHubRepo}:environment:aws-sandbox
+      Policies:
+        - PolicyName: state-access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: [s3:ListBucket]
+                Resource: !GetAtt StateBucket.Arn
+              - Effect: Allow
+                Action: [s3:GetObject, s3:PutObject, s3:DeleteObject]
+                Resource: !Sub ${StateBucket.Arn}/dt-aws-lab-02/*
+        - PolicyName: manage-lab-resources-only
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: LabBucketsOnly
+                Effect: Allow
+                Action: ["s3:*"]
+                Resource:
+                  - !Sub arn:${AWS::Partition}:s3:::dt-aws-lab-02-evidence-*
+                  - !Sub arn:${AWS::Partition}:s3:::dt-aws-lab-02-evidence-*/*
+              - Sid: KmsCreateCannotBeResourceScoped
+                Effect: Allow
+                Action: [kms:CreateKey, kms:TagResource, kms:ListKeys, kms:ListAliases]
+                Resource: "*"
+                Condition:
+                  StringEquals:
+                    aws:RequestTag/Lab: dt-aws-lab-02
+              - Sid: KmsManageTaggedLabKeysOnly
+                Effect: Allow
+                Action:
+                  - kms:DescribeKey
+                  - kms:GetKeyPolicy
+                  - kms:GetKeyRotationStatus
+                  - kms:EnableKeyRotation
+                  - kms:ListResourceTags
+                  - kms:TagResource
+                  - kms:ScheduleKeyDeletion
+                  - kms:GenerateDataKey
+                  - kms:Decrypt
+                Resource: "*"
+                Condition:
+                  StringEquals:
+                    aws:ResourceTag/Lab: dt-aws-lab-02
+              - Sid: ReadOnlyIdentity
+                Effect: Allow
+                Action: [sts:GetCallerIdentity]
+                Resource: "*"
+
+Outputs:
+  RoleArn:
+    Value: !GetAtt TerraformRole.Arn
+  StateBucket:
+    Value: !Ref StateBucket

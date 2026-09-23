@@ -1,0 +1,20 @@
+{
+  "@context": "https://openvex.dev/ns/v0.2.0",
+  "@id": "https://example.com/dt-lab-12/vex/pyyaml-cve-2020-14343",
+  "author": "dt-lab-12 security reviewer <your-email@example.com>",
+  "timestamp": "2026-09-23T00:00:00Z",
+  "version": 1,
+  "statements": [
+    {
+      "vulnerability": { "name": "CVE-2020-14343" },
+      "products": [
+        {
+          "@id": "pkg:pypi/pyyaml@5.3.1"
+        }
+      ],
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_in_execute_path",
+      "impact_statement": "dt-orders-api only calls yaml.safe_load(); the vulnerable full_load/FullLoader path (CVE-2020-14343) is never invoked. Evidence: Semgrep rule and code review in PR #<number>. Review by 2026-12-31."
+    }
+  ]
+}

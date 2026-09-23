@@ -1,0 +1,20 @@
+{
+  "properties": {
+    "displayName": "DT: Storage accounts must disallow anonymous blob access",
+    "description": "Denies storage accounts that allow anonymous (public) blob access. Chapter 17 / AZ-LAB-02.",
+    "mode": "Indexed",
+    "metadata": { "category": "Storage", "version": "1.0.0", "source": "Defending Tomorrow labs" },
+    "parameters": {
+      "effect": { "type": "String", "allowedValues": ["Audit", "Deny", "Disabled"], "defaultValue": "Deny" }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          { "field": "type", "equals": "Microsoft.Storage/storageAccounts" },
+          { "field": "Microsoft.Storage/storageAccounts/allowBlobPublicAccess", "notEquals": false }
+        ]
+      },
+      "then": { "effect": "[parameters('effect')]" }
+    }
+  }
+}
