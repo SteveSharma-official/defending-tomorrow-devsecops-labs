@@ -30,8 +30,8 @@ app/Dockerfile ─▶ hadolint ─▶ docker build ─▶ [gate] USER ≠ root �
                                               ─▶ trivy image (vuln + secret, HIGH/CRITICAL, fixable) ─▶ pass / fail
 ```
 
-### Correction to the manuscript (Chapter 14, Dockerfile listing)
-The Chapter 14 Dockerfile does not build: `COPY go.mod go.sum go.mod` and `COPY --chmod=644 /app/service` are malformed, `READONLY_ROOTFS` is not a Dockerfile instruction, the distroless digest is truncated, `HEALTHCHECK` calls `curl` (absent from distroless) with an unexpanded `${APP_PORT}` in exec form, and `chmod 644` would remove the binary's execute bit. hadolint 2.12.0 stops at line 15 with a parse error. `app/Dockerfile` in this lab is a working replacement pattern for the Python sample service; see the Gap Report for the Go correction.
+### Implementation note (Chapter 14 Dockerfile listing)
+The Chapter 14 Dockerfile listing is condensed for print and does not build as shown: `COPY go.mod go.sum go.mod` and `COPY --chmod=644 /app/service` are malformed, `READONLY_ROOTFS` is not a Dockerfile instruction, the distroless digest is truncated, `HEALTHCHECK` calls `curl` (absent from distroless) with an unexpanded `${APP_PORT}` in exec form, and `chmod 644` would remove the binary's execute bit. hadolint 2.12.0 stops at line 15 with a parse error. `app/Dockerfile` in this lab is a working replacement pattern for the Python sample service; the same hardening decisions apply to a Go service on a distroless base.
 
 ## Step 1 — Create or Open the Repository
 ```bash
