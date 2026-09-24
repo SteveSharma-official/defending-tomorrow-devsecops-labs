@@ -2,7 +2,7 @@
 
 | Chapter | Level | Difficulty | Estimated time | Cloud required? |
 |---|---|---|---|---|
-| Chapter 19 — Security Testing at Scale (**chapter to be completed — see Gap Report**); introduced in Chapter 11 §11.4 until Chapter 19 exists | 2 — Practitioner | Intermediate | 45–60 minutes | No |
+| Chapter 19 — Security Testing at Scale; also introduced in Chapter 11 §11.4 | 2 — Practitioner | Intermediate | 45–60 minutes | No |
 
 ## What You Will Build
 A two-engine SAST pipeline: **CodeQL** (semantic data-flow analysis, free for public repositories) and **Semgrep** running an organisation-specific rule stored in the repository. Findings appear in **Security → Code scanning** and a **ruleset** blocks merging when high-severity results exist.
