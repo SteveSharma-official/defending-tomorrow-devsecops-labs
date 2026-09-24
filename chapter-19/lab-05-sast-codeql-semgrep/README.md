@@ -2,7 +2,7 @@
 
 | Chapter | Level | Difficulty | Estimated time | Cloud required? |
 |---|---|---|---|---|
-| Chapter 19 — Security Testing at Scale; also introduced in Chapter 11 §11.4 | 2 — Practitioner | Intermediate | 45–60 minutes | No |
+| Chapter 19 — Security Testing at Scale (§19.3 SAST in the Pull Request); Chapter 11 §11.4 Hardening the Build Environment | 2 — Practitioner | Intermediate | 45–60 minutes | No |
 
 ## What You Will Build
 A two-engine SAST pipeline: **CodeQL** (semantic data-flow analysis, free for public repositories) and **Semgrep** running an organisation-specific rule stored in the repository. Findings appear in **Security → Code scanning** and a **ruleset** blocks merging when high-severity results exist.
@@ -14,7 +14,7 @@ A two-engine SAST pipeline: **CodeQL** (semantic data-flow analysis, free for pu
 - Triage an alert: trace source → sink, fix, and confirm closure.
 
 ## Prerequisites
-**Required:** LAB-00 and LAB-02 (rulesets); Chapter 11 §11.4.
+**Required:** LAB-00 and LAB-02 (rulesets); Chapter 19 §19.2–19.3.
 **Optional:** Python 3.12+ and `pip install semgrep` to test rules locally.
 
 ## Estimated Time
@@ -47,7 +47,7 @@ git push -u origin main
 If GitHub offers CodeQL **default setup**, leave it **off** — this lab uses the advanced (workflow) setup and the two cannot run together.
 
 ## Step 3 — Build the Lab
-Read `.semgrep/dt-sql-injection.yml`.
+Read `.semgrep/dt-sql-injection.yml` and its tests in `.semgrep/tests/dt-sql-injection.py`: every line marked `# ruleid:` must be flagged and every `# ok:` line must not. The workflow runs `semgrep --test` before the scan, so a rule change that breaks its own tests stops the pipeline. The `# todoruleid:` case — a query assembled in a variable first — is a known limit of pattern matching that CodeQL's data-flow analysis covers (Chapter 19 §19.3.1).
 - **What you are doing:** codifying the rule "never build SQL from strings" as a machine-checkable pattern.
 - **Why it matters:** CodeQL finds *tainted flows* it can prove; a custom rule enforces *your standard* even where no taint is provable (for example, internal callers), and runs in seconds on every PR.
 
