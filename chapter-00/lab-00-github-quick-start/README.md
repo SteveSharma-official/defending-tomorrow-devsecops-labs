@@ -141,4 +141,4 @@ A pipeline is a security control only when it runs on every change, holds the le
 Add a second job that runs only on `pull_request` and prints the list of changed files (`git diff --name-only origin/main...HEAD`). Keep the workflow's permissions at `contents: read`.
 
 ---
-**Validation status:** workflow syntax checked with actionlint 1.7.12 and zizmor 1.30.1; tests executed locally (4 passed, Python 3.11). **EXECUTION VALIDATION REQUIRED** on a GitHub-hosted runner before publication.
+**Validation status:** workflow syntax checked with actionlint 1.7.12 and zizmor 1.30.1; tests executed locally (4 passed, Python 3.11). **EXECUTION VALIDATION REQUIRED** on a GitHub-hosted runner.
