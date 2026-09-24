@@ -17,7 +17,7 @@ A detection repository with two Sigma rules (CloudTrail logging disabled; GitHub
 **Required:** LAB-00; Chapter 23 §23.2.
 **Optional:** Python 3.12+ with `pip install sigma-cli pySigma-backend-splunk pytest` locally.
 
-> **Corrections to the manuscript (Chapter 23 listings).** `sigma check` (sigma-cli 3.1.0) rejects both published rules with `SigmaStatusError`: `status: production` is not a Sigma status (use `stable`, `test`, `experimental`, `deprecated` or `unsupported`). `groupby`/`timeframe` inside `detection` are legacy aggregation syntax; the "impossible travel" rule also contains no geographic or velocity logic — it matches every successful login outside the filter. Impossible travel requires a Sigma **correlation** rule or backend-specific analytics. The filter combines `startswith` and `endswith` on the same field in one map (AND), which matches almost nothing.
+> **Implementation note (Chapter 23 listings).** The printed rules are simplified for readability; `sigma check` (sigma-cli 3.1.0) rejects both as printed with `SigmaStatusError`: `status: production` is not a Sigma status (use `stable`, `test`, `experimental`, `deprecated` or `unsupported`). `groupby`/`timeframe` inside `detection` are legacy aggregation syntax; the "impossible travel" rule also contains no geographic or velocity logic — it matches every successful login outside the filter. Impossible travel requires a Sigma **correlation** rule or backend-specific analytics. The filter combines `startswith` and `endswith` on the same field in one map (AND), which matches almost nothing.
 
 ## Estimated Time
 **45–60 minutes**
@@ -62,7 +62,7 @@ action IN ("protected_branch.destroy", "repository_ruleset.destroy")
 Download the `converted-detections` artifact. Reviewers approve the *query*, not only the YAML.
 
 ## Step 7 — Introduce Deliberate Failures
-1. **Invalid metadata:** in `rules/github_ruleset_or_protection_removed.yml`, change `status: test` to `status: production` (the manuscript's value).
+1. **Invalid metadata:** in `rules/github_ruleset_or_protection_removed.yml`, change `status: test` to `status: production` (the value shown in the Chapter 23 listing).
 2. **Logic regression:** in `rules/aws_cloudtrail_logging_disabled.yml`, change the filter modifier from `|endswith` to `|contains` and the value to `:assumed-role/` — a "quick fix" for noisy alerts.
 Commit both on branch `tune-rules`, push, open a PR.
 
