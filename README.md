@@ -4,7 +4,7 @@ Hands-on GitHub laboratories for **_Defending Tomorrow: Building Secure Cloud-Na
 
 The book explains *why* and *how* security becomes a property of the software factory. These labs let you **READ → UNDERSTAND → PRACTICE → VALIDATE → APPLY**: every lab introduces one control, has you break it safely, observe the detection, remediate, and prove the fix — with cleanup instructions so nothing is left running.
 
-> **Status: pre-publication (September 2026) — repository is private until the book is released; make it public at publication so readers can clone it.** Workflows and code have been statically validated and, where marked, executed locally. Each lab states its validation status; items marked **EXECUTION VALIDATION REQUIRED** have not yet been run end-to-end on GitHub or in a cloud account.
+> **Status:** Workflows and code have been statically validated and, where marked, executed locally. Each lab states its validation status; items marked **EXECUTION VALIDATION REQUIRED** have not yet been run end-to-end on GitHub or in a cloud account — if you run one, please report the result through an issue.
 
 ## Who This Repository Is For
 - **Students and career changers** who understand security concepts and want practical pipeline experience.
@@ -67,13 +67,13 @@ The **AWS-LAB** and **AZ-LAB** labs create real cloud resources. **They can incu
 | [LAB-02](chapter-10/lab-02-rulesets-codeowners-signing/README.md) | Ch 10 | Protect the Source Surface: Rulesets, CODEOWNERS and Signed Commits | Beginner | No | `chapter-10/lab-02-rulesets-codeowners-signing` |
 | [LAB-03](chapter-10/lab-03-secret-detection-in-depth/README.md) | Ch 10 | Secret Detection in Depth | Beginner | No | `chapter-10/lab-03-secret-detection-in-depth` |
 | [LAB-04](chapter-11/lab-04-harden-github-actions/README.md) | Ch 11 | Harden GitHub Actions: Injection, Permissions and Pinning | Intermediate | No | `chapter-11/lab-04-harden-github-actions` |
-| [LAB-05](chapter-19/lab-05-sast-codeql-semgrep/README.md) | Ch 19* (interim: Ch 11) | SAST in the Pull Request: CodeQL and Custom Semgrep Rules | Intermediate | No | `chapter-19/lab-05-sast-codeql-semgrep` |
-| [LAB-06](chapter-19/lab-06-sca-dependency-security/README.md) | Ch 19* (interim: Ch 11), 13 | Software Composition Analysis | Intermediate | No | `chapter-19/lab-06-sca-dependency-security` |
+| [LAB-05](chapter-19/lab-05-sast-codeql-semgrep/README.md) | Ch 19*, 11 | SAST in the Pull Request: CodeQL and Custom Semgrep Rules | Intermediate | No | `chapter-19/lab-05-sast-codeql-semgrep` |
+| [LAB-06](chapter-19/lab-06-sca-dependency-security/README.md) | Ch 19*, 11, 13 | Software Composition Analysis | Intermediate | No | `chapter-19/lab-06-sca-dependency-security` |
 | [LAB-07](chapter-12/lab-07-iac-scanning/README.md) | Ch 12 | Infrastructure as Code Scanning | Intermediate | No | `chapter-12/lab-07-iac-scanning` |
 | [LAB-08](chapter-17/lab-08-policy-as-code-conftest/README.md) | Ch 12, 17* | Policy as Code: Evaluate a Terraform Plan | Intermediate | No | `chapter-17/lab-08-policy-as-code-conftest` |
 | [LAB-09](chapter-14/lab-09-container-hardening-scanning/README.md) | Ch 14 | Container Hardening and Image Scanning | Intermediate | No | `chapter-14/lab-09-container-hardening-scanning` |
 | [LAB-10](chapter-14/lab-10-k8s-admission-kyverno/README.md) | Ch 14 | Kubernetes Admission Control as Code with Kyverno | Intermediate | No (optional kind) | `chapter-14/lab-10-k8s-admission-kyverno` |
-| [LAB-11](chapter-19/lab-11-dast-zap-baseline/README.md) | Ch 19* (interim: Ch 11) | DAST in the Pipeline: OWASP ZAP Baseline | Intermediate | No | `chapter-19/lab-11-dast-zap-baseline` |
+| [LAB-11](chapter-19/lab-11-dast-zap-baseline/README.md) | Ch 19*, 11 | DAST in the Pipeline: OWASP ZAP Baseline | Intermediate | No | `chapter-19/lab-11-dast-zap-baseline` |
 | [LAB-12](chapter-13/lab-12-sbom-vex/README.md) | Ch 13 | SBOM and VEX | Advanced | No | `chapter-13/lab-12-sbom-vex` |
 | [LAB-13](chapter-13/lab-13-provenance-signing/README.md) | Ch 13, 11 | Build Provenance and Keyless Signing | Advanced | No (GHCR) | `chapter-13/lab-13-provenance-signing` |
 | [LAB-14](chapter-11/lab-14-security-gates-environments/README.md) | Ch 15, 11 | Security Gates and Deployment Environments | Advanced | No | `chapter-11/lab-14-security-gates-environments` |
