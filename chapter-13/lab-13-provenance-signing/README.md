@@ -19,7 +19,7 @@ A release workflow that builds the image once, pushes it to **GHCR** under an im
 
 > **Plan availability.** Artifact attestations are available for **public** repositories on all current plans; private/internal repositories require GitHub Enterprise Cloud (GitHub Docs, September 2026 — VERIFY CURRENT PRODUCT BEHAVIOUR). Cosign keyless signing records an entry in the **public** Rekor transparency log, including your repository and workflow identity. Do not use keyless public-good signing for confidential projects.
 
-> **Correction to the manuscript.** The Chapter 11 and Chapter 13 listings sign `image:${{ github.sha }}` / `image@${{ github.sha }}`: a Git commit SHA is not an image digest, and `cosign sign` does not take `--certificate-identity`, `--certificate-oidc-issuer` or `--attestation` (those are verification or `cosign attest` flags). `slsa-github-generator` is a reusable workflow invoked at job level, not a CLI or step. This workflow shows a working pattern.
+> **Implementation note (Chapter 11 and 13 listings).** The printed listings are simplified and sign `image:${{ github.sha }}` / `image@${{ github.sha }}`: a Git commit SHA is not an image digest, and `cosign sign` does not take `--certificate-identity`, `--certificate-oidc-issuer` or `--attestation` (those are verification or `cosign attest` flags). `slsa-github-generator` is a reusable workflow invoked at job level, not a CLI or step. This workflow shows a working pattern.
 
 ## Estimated Time
 **50–70 minutes**
