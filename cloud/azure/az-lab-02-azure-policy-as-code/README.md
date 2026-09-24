@@ -2,7 +2,7 @@
 
 | Chapter | Level | Difficulty | Estimated time | Cloud required? |
 |---|---|---|---|---|
-| Chapter 17 — Policy as Code; Chapter 3 secure-by-default; Appendix B.1 | 3 — Advanced | Advanced | 50–65 minutes | **Yes — Azure subscription** |
+| Chapter 17 — Policy as Code (§17.4.5 Control-Plane Policy, §17.5.3 Admission, §17.6.1 Exceptions as Code); Chapter 3 secure-by-default; Appendix B.1 | 3 — Advanced | Advanced | 50–65 minutes | **Yes — Azure subscription** |
 
 > **Cost note:** Azure Policy definitions and assignments are not charged; the test storage account is low-cost and deleted within the lab. Follow the cleanup instructions at the end of the lab and verify current pricing and free-tier eligibility before starting. Use a sandbox subscription.
 
