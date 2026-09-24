@@ -17,7 +17,7 @@ Three Kyverno cluster policies — Pod Security Standards *restricted*, immutabl
 **Required:** LAB-00; Chapter 14 §14.3–14.5.
 **Optional (cluster path):** Docker, `kind` ≥ 0.23, `kubectl`, Helm 3. VERIFY CURRENT PRODUCT BEHAVIOUR for the Kyverno Helm chart version matching CLI 1.15.x.
 
-> **Clarification (Appendix C).** Appendix C recommends admission controllers "rather than the deprecated PodSecurity admission webhook". Pod Security **Admission** (PSA) is the built-in, GA replacement for the *removed* PodSecurityPolicy — it is not deprecated. Use PSA namespace labels as the baseline and Kyverno/Gatekeeper for richer policy, exceptions and reporting. Appendix C's `volumes.forbidden` list also includes `projected`, which PSS *restricted* permits (projected volumes carry service-account tokens), and it lists `readOnlyRootFilesystem`, which is good practice but not part of PSS *restricted*.
+> **Book alignment.** Appendix C (§C.1.2) prints this lab's `pod-security-restricted` policy. Pod Security **Admission** (PSA) is the built-in, generally available replacement for the *removed* PodSecurityPolicy — use PSA namespace labels as the baseline and Kyverno or Gatekeeper for richer policy, exceptions and reporting. PSS *restricted* permits projected volumes (they carry service-account tokens) and does not require `readOnlyRootFilesystem`, although a read-only root filesystem remains good practice.
 
 ## Estimated Time
 **40–50 minutes**
