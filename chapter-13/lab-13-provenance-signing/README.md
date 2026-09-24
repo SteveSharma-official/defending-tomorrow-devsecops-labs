@@ -2,7 +2,7 @@
 
 | Chapter | Level | Difficulty | Estimated time | Cloud required? |
 |---|---|---|---|---|
-| Chapter 13 — Software Supply Chain Security (§13.2 SLSA, §13.4 Sigstore/Cosign); Chapter 11 §11.5 Integrity Chain | 3 — Advanced | Advanced | 50–70 minutes | No (uses GitHub Container Registry) |
+| Chapter 13 — Software Supply Chain Security (§13.2 SLSA, §13.4 Sigstore/Cosign); Chapter 11 §11.5 Integrity Chain; Chapter 32 §32.3.2 Deployment-Time Verification | 3 — Advanced | Advanced | 50–70 minutes | No (uses GitHub Container Registry) |
 
 ## What You Will Build
 A release workflow that builds the image once, pushes it to **GHCR** under an immutable commit-SHA tag, creates a **Sigstore-signed build-provenance attestation** with `actions/attest`, adds a **Cosign keyless signature** by digest, and then — in a separate job with no write permissions — **verifies both exactly as a deployer would**.
@@ -19,7 +19,7 @@ A release workflow that builds the image once, pushes it to **GHCR** under an im
 
 > **Plan availability.** Artifact attestations are available for **public** repositories on all current plans; private/internal repositories require GitHub Enterprise Cloud (GitHub Docs, September 2026 — VERIFY CURRENT PRODUCT BEHAVIOUR). Cosign keyless signing records an entry in the **public** Rekor transparency log, including your repository and workflow identity. Do not use keyless public-good signing for confidential projects.
 
-> **Implementation note (Chapter 11 and 13 listings).** The printed listings are simplified and sign `image:${{ github.sha }}` / `image@${{ github.sha }}`: a Git commit SHA is not an image digest, and `cosign sign` does not take `--certificate-identity`, `--certificate-oidc-issuer` or `--attestation` (those are verification or `cosign attest` flags). `slsa-github-generator` is a reusable workflow invoked at job level, not a CLI or step. This workflow shows a working pattern.
+> **Book alignment.** Chapter 11 prints this lab's build job, and Chapter 13's listing follows the same pattern: the image is signed and attested by **digest** (not by Git commit SHA), `cosign sign` takes no verification flags (`--certificate-identity` and `--certificate-oidc-issuer` belong to `cosign verify`), and `slsa-github-generator` is invoked as a reusable workflow at job level. Chapter 32 applies the same verification to AI model artefacts.
 
 ## Estimated Time
 **50–70 minutes**
