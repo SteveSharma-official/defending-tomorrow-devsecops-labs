@@ -2,7 +2,7 @@
 
 | Chapter | Level | Difficulty | Estimated time | Cloud required? |
 |---|---|---|---|---|
-| Chapter 19 — Security Testing at Scale (**to be completed**; introduced in Chapter 11 §11.4 meanwhile); Chapter 13 | 2 — Practitioner | Intermediate | 35–45 minutes | No |
+| Chapter 19 — Security Testing at Scale (§19.4 SCA and Dependency Governance); Chapter 13 | 2 — Practitioner | Intermediate | 35–45 minutes | No |
 
 ## What You Will Build
 A dependency-security pipeline with a **diff-aware PR gate** (GitHub dependency review), a **full-inventory audit** (pip-audit against the PyPI/OSV advisory data) on push, PR and weekly schedule, and **Dependabot** updates for both Python packages and pinned GitHub Actions.
