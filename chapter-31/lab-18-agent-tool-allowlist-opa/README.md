@@ -17,7 +17,7 @@ The policy core of an MCP gateway: an OPA/Rego policy that decides whether a nam
 **Required:** LAB-08 (Rego basics); Chapter 31 §31.1–31.5.
 **Optional:** OPA ≥ 1.0 locally.
 
-> **Correction to the manuscript (Chapter 0 listing).** `import data.agent.bindings[agent_id].allowlist` is not valid Rego — imports cannot contain variables (OPA 1.20.2: `rego_parse_error: unexpected var token`), and the listing references undefined `satisfies`. The Chapter 15 policies use Python-style `"…%s" % x` formatting and pre-1.0 syntax, and fail to parse under both OPA 1.x and `--v0-compatible`. `policy/agent_tools.rego` is a working replacement.
+> **Implementation note (Chapter 0 and Chapter 15 listings).** `import data.agent.bindings[agent_id].allowlist` is not valid Rego — imports cannot contain variables (OPA 1.20.2: `rego_parse_error: unexpected var token`), and the listing references undefined `satisfies`. The Chapter 15 policies use Python-style `"…%s" % x` formatting and pre-1.0 syntax, and fail to parse under both OPA 1.x and `--v0-compatible`. `policy/agent_tools.rego` is a working replacement.
 
 ## Estimated Time
 **45–60 minutes**
