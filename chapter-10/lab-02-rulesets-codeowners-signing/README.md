@@ -4,7 +4,7 @@
 |---|---|---|---|---|
 | Chapter 10 — Git Security Engineering (§10.3 Branch Protection, §10.4 Commit Signing) | 1 — Foundations | Beginner | 45–60 minutes | No |
 
-> **Relationship to the Chapter 10 in-text lab.** The manuscript's lab assumes two reviewers and an organisation. This lab is designed so a **single reader on GitHub Free** can complete it; the two-reviewer and CODEOWNERS-approval variants are provided as optional steps for readers with a second account or a Team/Enterprise organisation.
+> **Relationship to the Chapter 10 in-text lab.** The in-chapter lab assumes two reviewers and an organisation. This lab is designed so a **single reader on GitHub Free** can complete it; the two-reviewer and CODEOWNERS-approval variants are provided as optional steps for readers with a second account or a Team/Enterprise organisation.
 
 ## What You Will Build
 A public repository whose `main` branch is protected by a **repository ruleset** (no deletion, no force push, linear history, pull request required, required status check, signed commits) and a `CODEOWNERS` file that assigns ownership of pipeline and infrastructure files. Commits are signed with an **SSH signing key** and show as *Verified*.
