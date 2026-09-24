@@ -2,7 +2,7 @@
 
 | Chapter | Level | Difficulty | Estimated time | Cloud required? |
 |---|---|---|---|---|
-| Chapter 17 — Policy as Code; Chapter 12 §12.5 Policy Validation Pre-Apply | 2 — Practitioner | Intermediate | 45–55 minutes | No |
+| Chapter 17 — Policy as Code (§17.3 Open Policy Agent and Rego, §17.5.2 Pre-Apply, §17.6.1 Exceptions as Code); Chapter 12 §12.5 Policy Validation Pre-Apply | 2 — Practitioner | Intermediate | 45–55 minutes | No |
 
 ## What You Will Build
 Three organisational guardrails in **Rego (OPA 1.x syntax)** — mandatory data-classification and cost tags, no internet-exposed administrative ports, mandatory KMS key rotation — with **unit tests**, evaluated by **Conftest** against a Terraform plan in JSON form on every pull request.
@@ -17,7 +17,7 @@ Three organisational guardrails in **Rego (OPA 1.x syntax)** — mandatory data-
 **Required:** LAB-07; Chapter 12 §12.5.
 **Optional:** OPA ≥ 1.0 and Conftest ≥ 0.56 locally; Terraform/OpenTofu to produce your own plan JSON.
 
-> **Implementation note (Chapter 12 listing).** The Chapter 12 Rego uses pre-1.0 syntax (`deny[msg] { … }`). OPA 1.20.2 rejects it with `` `if` keyword is required before rule body `` and `` `contains` keyword is required for partial set rules ``; it parses only with `--v0-compatible`. Its `is_approved_subnet` helper also compares a subnet *ID* with a resource *address*, which never matches real plan output. This lab's policy is written for OPA 1.x.
+> **Book alignment.** Chapter 12 (§12.5) and Chapter 17 (§17.3, §17.5.2) print this lab's policy style in Rego v1 syntax, the syntax used throughout the book. Chapter 17 §17.6.1 shows the solution pattern for this lab's Further Challenge (governed, expiring exceptions for `POL-NET-002`).
 
 ## Estimated Time
 **45–55 minutes**
