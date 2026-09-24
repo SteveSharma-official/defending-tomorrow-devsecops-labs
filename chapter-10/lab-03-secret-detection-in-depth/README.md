@@ -17,7 +17,7 @@ The three secret-scanning layers of Chapter 10, Figure 10.4 on one repository: a
 **Required:** LAB-00; Python 3.9+ with `pip install pre-commit`.
 **Optional:** gitleaks installed locally (`gitleaks version`).
 
-> **Safety note.** The lab uses `scripts/make-test-secret.sh`, which generates a **random, synthetic** AWS-format key pair that is not associated with any account. Never use a real credential. The widely published AWS documentation example key (`AKIAIOSFODNN7EXAMPLE`) is allow-listed by gitleaks and will **not** trigger detection — verified with gitleaks 8.28.0 — so the Chapter 10 manuscript lab's Attack 4 does not behave as described with that value.
+> **Safety note.** The lab uses `scripts/make-test-secret.sh`, which generates a **random, synthetic** AWS-format key pair that is not associated with any account. Never use a real credential. The widely published AWS documentation example key (`AKIAIOSFODNN7EXAMPLE`) is allow-listed by gitleaks and will **not** trigger detection — verified with gitleaks 8.28.0 — so this lab generates a random synthetic key for the Chapter 10 Attack 4 exercise instead of using that value.
 
 ## Estimated Time
 **40–50 minutes**
