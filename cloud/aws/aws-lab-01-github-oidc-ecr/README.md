@@ -19,7 +19,7 @@ A CloudFormation stack that federates GitHub Actions with AWS IAM through OIDC a
 **Required:** an AWS account you control (sandbox), with permissions to create IAM roles, an IAM OIDC provider and ECR repositories; AWS CLI v2 (`aws --version`) signed in (`aws sts get-caller-identity`); LAB-09 completed.
 **Optional:** Docker locally.
 
-> **Implementation notes (Appendix A).** (1) Several policies scope `ecr:GetAuthorizationToken` to a repository ARN; that action requires `Resource: "*"`, so login fails. (2) The CI and deploy roles grant `eks:UpdateClusterVersion` to "update the deployment" — that action upgrades the EKS **control-plane Kubernetes version**; workload deployment is authorised through EKS access entries/Kubernetes RBAC, not that IAM action. (3) The SCP condition `ec2:VpcFlowLogsEnabled` does not exist, and `StringNotEquals` with a wildcard ARN needs `ArnNotLike`/`StringNotLike`. (4) AWS CodeCommit, referenced throughout Appendix A, was closed to new customers in July 2024 and returned to general availability in November 2025 — VERIFY CURRENT PRODUCT BEHAVIOUR before relying on it.
+> **Book alignment.** Appendix A's IAM and SCP listings follow this lab's patterns: `ecr:GetAuthorizationToken` is granted on `Resource: "*"` in its own statement (it cannot be scoped to a repository); workload deployment to EKS is authorised through EKS access entries and Kubernetes RBAC, not `eks:UpdateClusterVersion` (which upgrades the control plane); and SCP exclusions for wildcard role ARNs use `ArnNotLike`. AWS CodeCommit, referenced in Appendix A, was closed to new customers in July 2024 and returned to general availability in November 2025 — VERIFY CURRENT PRODUCT BEHAVIOUR before relying on it.
 
 ## Estimated Time
 **50–70 minutes**
