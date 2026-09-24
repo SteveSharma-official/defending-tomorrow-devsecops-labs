@@ -44,6 +44,8 @@ jobs:
         with:
           python-version: "3.13"
       - run: pip install semgrep==1.177.0
+      - name: Test the custom rules first (a rule is code; it gets tests)
+        run: semgrep --test --config .semgrep/dt-sql-injection.yml .semgrep/tests/dt-sql-injection.py --metrics=off
       - name: Semgrep with the repository's own rules (offline, no account needed)
         run: semgrep scan --config .semgrep/ --metrics=off --sarif --output semgrep.sarif app/ || true
       - uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
