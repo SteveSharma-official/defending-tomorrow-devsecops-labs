@@ -67,15 +67,15 @@ The **AWS-LAB** and **AZ-LAB** labs create real cloud resources. **They can incu
 | [LAB-02](chapter-10/lab-02-rulesets-codeowners-signing/README.md) | Ch 10 | Protect the Source Surface: Rulesets, CODEOWNERS and Signed Commits | Beginner | No | `chapter-10/lab-02-rulesets-codeowners-signing` |
 | [LAB-03](chapter-10/lab-03-secret-detection-in-depth/README.md) | Ch 10 | Secret Detection in Depth | Beginner | No | `chapter-10/lab-03-secret-detection-in-depth` |
 | [LAB-04](chapter-11/lab-04-harden-github-actions/README.md) | Ch 11 | Harden GitHub Actions: Injection, Permissions and Pinning | Intermediate | No | `chapter-11/lab-04-harden-github-actions` |
-| [LAB-05](chapter-19/lab-05-sast-codeql-semgrep/README.md) | Ch 19*, 11 | SAST in the Pull Request: CodeQL and Custom Semgrep Rules | Intermediate | No | `chapter-19/lab-05-sast-codeql-semgrep` |
-| [LAB-06](chapter-19/lab-06-sca-dependency-security/README.md) | Ch 19*, 11, 13 | Software Composition Analysis | Intermediate | No | `chapter-19/lab-06-sca-dependency-security` |
+| [LAB-05](chapter-19/lab-05-sast-codeql-semgrep/README.md) | Ch 19, 11 | SAST in the Pull Request: CodeQL and Custom Semgrep Rules | Intermediate | No | `chapter-19/lab-05-sast-codeql-semgrep` |
+| [LAB-06](chapter-19/lab-06-sca-dependency-security/README.md) | Ch 19, 13 | Software Composition Analysis | Intermediate | No | `chapter-19/lab-06-sca-dependency-security` |
 | [LAB-07](chapter-12/lab-07-iac-scanning/README.md) | Ch 12 | Infrastructure as Code Scanning | Intermediate | No | `chapter-12/lab-07-iac-scanning` |
-| [LAB-08](chapter-17/lab-08-policy-as-code-conftest/README.md) | Ch 12, 17* | Policy as Code: Evaluate a Terraform Plan | Intermediate | No | `chapter-17/lab-08-policy-as-code-conftest` |
+| [LAB-08](chapter-17/lab-08-policy-as-code-conftest/README.md) | Ch 17, 12 | Policy as Code: Evaluate a Terraform Plan | Intermediate | No | `chapter-17/lab-08-policy-as-code-conftest` |
 | [LAB-09](chapter-14/lab-09-container-hardening-scanning/README.md) | Ch 14 | Container Hardening and Image Scanning | Intermediate | No | `chapter-14/lab-09-container-hardening-scanning` |
 | [LAB-10](chapter-14/lab-10-k8s-admission-kyverno/README.md) | Ch 14 | Kubernetes Admission Control as Code with Kyverno | Intermediate | No (optional kind) | `chapter-14/lab-10-k8s-admission-kyverno` |
-| [LAB-11](chapter-19/lab-11-dast-zap-baseline/README.md) | Ch 19*, 11 | DAST in the Pipeline: OWASP ZAP Baseline | Intermediate | No | `chapter-19/lab-11-dast-zap-baseline` |
+| [LAB-11](chapter-19/lab-11-dast-zap-baseline/README.md) | Ch 19 | DAST in the Pipeline: OWASP ZAP Baseline | Intermediate | No | `chapter-19/lab-11-dast-zap-baseline` |
 | [LAB-12](chapter-13/lab-12-sbom-vex/README.md) | Ch 13 | SBOM and VEX | Advanced | No | `chapter-13/lab-12-sbom-vex` |
-| [LAB-13](chapter-13/lab-13-provenance-signing/README.md) | Ch 13, 11 | Build Provenance and Keyless Signing | Advanced | No (GHCR) | `chapter-13/lab-13-provenance-signing` |
+| [LAB-13](chapter-13/lab-13-provenance-signing/README.md) | Ch 13, 11, 32 | Build Provenance and Keyless Signing | Advanced | No (GHCR) | `chapter-13/lab-13-provenance-signing` |
 | [LAB-14](chapter-11/lab-14-security-gates-environments/README.md) | Ch 15, 11 | Security Gates and Deployment Environments | Advanced | No | `chapter-11/lab-14-security-gates-environments` |
 | [LAB-15](chapter-16/lab-15-ai-assisted-pr-gate/README.md) | Ch 16 | Govern AI-Assisted Code: Tiered Review Gate | Advanced | No | `chapter-16/lab-15-ai-assisted-pr-gate` |
 | [LAB-16](chapter-18/lab-16-compliance-evidence-pipeline/README.md) | Ch 18 | Compliance as Code: Evidence Pipeline | Advanced | No | `chapter-18/lab-16-compliance-evidence-pipeline` |
@@ -83,9 +83,9 @@ The **AWS-LAB** and **AZ-LAB** labs create real cloud resources. **They can incu
 | [LAB-18](chapter-31/lab-18-agent-tool-allowlist-opa/README.md) | Ch 31 | Govern Agent Tool Access with Policy | Advanced | No | `chapter-31/lab-18-agent-tool-allowlist-opa` |
 | [LAB-19](chapter-29/lab-19-llm-guardrail-regression/README.md) | Ch 29, 30 | LLM Guardrail Regression Testing | Advanced | No | `chapter-29/lab-19-llm-guardrail-regression` |
 | [AWS-LAB-01](cloud/aws/aws-lab-01-github-oidc-ecr/README.md) | Ch 6, 11; App A | Keyless CI to AWS: GitHub OIDC and ECR | Advanced | Yes — AWS | `cloud/aws/aws-lab-01-github-oidc-ecr` |
-| [AWS-LAB-02](cloud/aws/aws-lab-02-terraform-drift-gate/README.md) | Ch 12, 8, 17* | Gated Terraform Delivery to AWS with Drift Detection | Advanced | Yes — AWS | `cloud/aws/aws-lab-02-terraform-drift-gate` |
+| [AWS-LAB-02](cloud/aws/aws-lab-02-terraform-drift-gate/README.md) | Ch 12, 8, 17 | Gated Terraform Delivery to AWS with Drift Detection | Advanced | Yes — AWS | `cloud/aws/aws-lab-02-terraform-drift-gate` |
 | [AZ-LAB-01](cloud/azure/az-lab-01-github-oidc-bicep/README.md) | Ch 6, 12; App B | Keyless CI to Azure: OIDC, Managed Identity, Bicep | Advanced | Yes — Azure | `cloud/azure/az-lab-01-github-oidc-bicep` |
-| [AZ-LAB-02](cloud/azure/az-lab-02-azure-policy-as-code/README.md) | App B, Ch 17* | Azure Policy as Code | Advanced | Yes — Azure | `cloud/azure/az-lab-02-azure-policy-as-code` |
+| [AZ-LAB-02](cloud/azure/az-lab-02-azure-policy-as-code/README.md) | Ch 17; App B | Azure Policy as Code | Advanced | Yes — Azure | `cloud/azure/az-lab-02-azure-policy-as-code` |
 | [CAPSTONE](capstone/secure-devsecops-pipeline/README.md) | Parts I–IV | Build a Secure DevSecOps Pipeline | Advanced | No (optional cloud) | `capstone/secure-devsecops-pipeline` |
 
 Full roadmap with chapter sections, skills and progression: [docs/lab-roadmap.md](docs/lab-roadmap.md).
