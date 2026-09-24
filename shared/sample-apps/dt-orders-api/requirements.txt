@@ -1,4 +1,4 @@
-# Secure baseline dependencies (resolved September 2026 — VERIFY CURRENT VERSIONS before publication)
+# Secure baseline dependencies (resolved September 2026 — check for newer patched versions before use)
 Flask==3.1.3
 PyYAML==6.0.3
 gunicorn==26.2.0
