@@ -2,7 +2,7 @@
 
 All workflows reference third-party actions by **full commit SHA** with the release tag in a comment.
 SHAs below were resolved from the upstream repositories' tags on **23 September 2026** (`git ls-remote`,
-annotated tags peeled to their commit). Re-verify before publication and keep them current with Dependabot
+annotated tags peeled to their commit). Re-verify periodically and keep them current with Dependabot
 (`package-ecosystem: github-actions`).
 
 | Action | Tag | Commit SHA |
