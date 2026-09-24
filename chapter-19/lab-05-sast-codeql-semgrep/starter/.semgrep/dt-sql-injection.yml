@@ -11,11 +11,16 @@ rules:
       book-reference: "Defending Tomorrow, Chapter 19 / LAB-05"
     patterns:
       - pattern-either:
-          - pattern: $CONN.execute(f"...", ...)
-          - pattern: $CONN.execute(f"...")
-          - pattern: $CONN.execute("..." + $X, ...)
-          - pattern: $CONN.execute("..." + $X)
-          - pattern: $CONN.execute("..." % $X, ...)
-          - pattern: $CONN.execute("..." % $X)
-          - pattern: $CONN.execute("...".format(...), ...)
-          - pattern: $CONN.execute("...".format(...))
+          - pattern: $CONN.execute($SQL, ...)
+          - pattern: $CONN.execute($SQL)
+      - metavariable-pattern:
+          metavariable: $SQL
+          pattern-either:
+            - pattern: f"..."
+            - pattern: $A + $B
+            - pattern: $FMT % $ARGS
+            - pattern: $FMT.format(...)
+      - metavariable-pattern:
+          metavariable: $SQL
+          patterns:
+            - pattern-not: '"..." + "..."'
