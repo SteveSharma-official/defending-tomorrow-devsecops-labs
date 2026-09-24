@@ -2,7 +2,7 @@
 
 | Chapter | Level | Difficulty | Estimated time | Cloud required? |
 |---|---|---|---|---|
-| Chapter 19 — Security Testing at Scale (**to be completed**; introduced in Chapter 11 §11.4 meanwhile); Chapter 3 (shift everywhere) | 2 — Practitioner | Intermediate | 35–45 minutes | No |
+| Chapter 19 — Security Testing at Scale (§19.5 DAST Against Ephemeral Targets and API Security Testing); Chapter 3 (shift everywhere) | 2 — Practitioner | Intermediate | 35–45 minutes | No |
 
 ## What You Will Build
 A workflow that starts the sample API on the GitHub-hosted runner and runs the **OWASP ZAP baseline scan** against it. A rules file promotes selected findings (missing security headers) to build-breaking failures, while documented, expected findings are ignored.
