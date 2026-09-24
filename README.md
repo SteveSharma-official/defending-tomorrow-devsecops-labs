@@ -6,6 +6,10 @@ The book explains *why* and *how* security becomes a property of the software fa
 
 > **Status:** Workflows and code have been statically validated and, where marked, executed locally. Each lab states its validation status; items marked **EXECUTION VALIDATION REQUIRED** have not yet been run end-to-end on GitHub or in a cloud account — if you run one, please report the result through an issue.
 
+## Platform Scope: AWS and Microsoft Azure
+
+The book and these labs are built on **AWS and Microsoft Azure**. Every chapter from 1 to 36 ends with an *AWS and Azure in Practice* section whose exercise runs on a **free AWS account and a free Azure account**; the commands for each chapter are in [exercises/](exercises/README.md). Start with [docs/free-account-setup.md](docs/free-account-setup.md) to create both accounts and set budget alerts. The book contains no console screenshots: consoles change constantly, so every step is a command or code that you run yourself and see the current result. Appendix D's AWS and Azure service equivalence is kept current in [docs/toolchain.md](docs/toolchain.md). Other clouds are outside the hands-on scope.
+
 ## Who This Repository Is For
 - **Students and career changers** who understand security concepts and want practical pipeline experience.
 - **Cybersecurity professionals** moving from assessment to engineering controls.
