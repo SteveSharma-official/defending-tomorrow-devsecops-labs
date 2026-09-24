@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """ai_pr_gate.py — pre-merge gate for AI-assisted pull requests (LAB-15, Chapter 16 §16.4).
 
-Corrected and hardened version of the manuscript's Listing 16.x:
+Hardened, runnable version of the Chapter 16 AI-assisted PR gate listing:
   * reviewer identities are compared as strings (the original called .get() on a string);
   * only each reviewer's LATEST review counts (a later "CHANGES_REQUESTED" cancels an approval);
   * the PR author can never satisfy their own review requirement;
