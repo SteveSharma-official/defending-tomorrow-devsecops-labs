@@ -17,7 +17,7 @@ A pull-request gate that classifies changed files (security-critical / security-
 **Required:** LAB-02 (rulesets and required checks); Chapter 16 §16.4–16.5.
 **Optional:** a trusted collaborator (colleague or study partner with their own GitHub account) to perform real reviews. Do **not** create a second personal account for this — GitHub's terms allow one free personal account per person.
 
-> **Implementation note (Chapter 16 listing).** The printed gate is simplified: it builds `reviewers` as a list of author strings and then calls `r.get("is_security_expert")` on each string (an `AttributeError` at runtime); counts superseded approvals; allows the author to count toward the requirement; and matches substrings such as `token` in `tokenizer`. `tools/ai_pr_gate.py` fixes all four and is covered by seven unit tests.
+> **Book alignment.** Chapter 16 prints the core of `tools/ai_pr_gate.py`. The gate evaluates structured reviewer records, ignores superseded approvals, never counts the author towards the approval requirement and matches sensitive paths by path segment, not substring (so `tokenizer` is not treated as `token`); the seven unit tests prove each behaviour. Chapter 17 §17.5.1 treats the gate as a source-surface policy.
 
 ## Estimated Time
 **45–60 minutes**
