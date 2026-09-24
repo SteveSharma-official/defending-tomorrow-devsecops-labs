@@ -17,7 +17,7 @@ A guardrail package — an injection-indicator scanner for retrieved content/too
 **Required:** LAB-18 recommended; Chapter 29 §29.3, §29.7; Chapter 30 §30.5.
 **Optional:** Python 3.12+ locally.
 
-> **Implementation note (Chapter 29 and 30 listings).** The Chapter 30 retrieval middleware builds dictionaries with bare names (`{type: …, document_id: …}`), which raises `NameError`; the Chapter 29 middleware treats `context` as both a dict and an object. `guardrails/output_validator.py` is a runnable equivalent.
+> **Book alignment.** The Chapter 29 and Chapter 30 middleware listings are architectural sketches (Chapter 30's uses string keys throughout); `guardrails/output_validator.py` and `guardrails/scanner.py` are their runnable, tested equivalents. Chapter 19 §19.9.1 uses this lab's corpus-and-threshold model as the pattern for regression-testing AI guardrails in the delivery pipeline.
 
 ## Estimated Time
 **40–50 minutes**
