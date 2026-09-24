@@ -17,7 +17,7 @@ A guardrail package — an injection-indicator scanner for retrieved content/too
 **Required:** LAB-18 recommended; Chapter 29 §29.3, §29.7; Chapter 30 §30.5.
 **Optional:** Python 3.12+ locally.
 
-> **Corrections to the manuscript listings.** The Chapter 30 retrieval middleware builds dictionaries with bare names (`{type: …, document_id: …}`), which raises `NameError`; the Chapter 29 middleware treats `context` as both a dict and an object. `guardrails/output_validator.py` is a runnable equivalent.
+> **Implementation note (Chapter 29 and 30 listings).** The Chapter 30 retrieval middleware builds dictionaries with bare names (`{type: …, document_id: …}`), which raises `NameError`; the Chapter 29 middleware treats `context` as both a dict and an object. `guardrails/output_validator.py` is a runnable equivalent.
 
 ## Estimated Time
 **40–50 minutes**
