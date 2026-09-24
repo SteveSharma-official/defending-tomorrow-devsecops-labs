@@ -1,5 +1,5 @@
 # LAB-08 — organisational guardrails evaluated against `terraform show -json` plan output.
-# Written in Rego v1 syntax (OPA 1.x default). The manuscript's Chapter 12/15 examples use
+# Written in Rego v1 syntax (OPA 1.x default). The book's Chapter 12/15 examples use
 # pre-1.0 syntax (`deny[msg] { ... }`), which OPA 1.x rejects unless run with --v0-compatible.
 package main
 
