@@ -1,0 +1,26 @@
+title: Agent Instruction to a Receiver Outside Its Authorised Collaborators
+id: 2c7e9b40-1f3d-4a6b-8e2f-24a1b2c3d403
+status: experimental
+description: >
+  Detection candidate from HUNT-AGENT-003 (LAB-21). Messages from the summarisation agent carry no
+  instructions to the payments agent in normal operation. Novel-pair logic needs a correlation rule
+  or SIEM analytic; this rule covers the specific confirmed pair and verb set.
+author: Defending Tomorrow labs
+date: 2026-10-01
+tags:
+  - attack.lateral-movement
+logsource:
+  product: mcp_gateway
+  category: agent_communication
+detection:
+  selection:
+    sender_agent_id: summariser-bot
+    receiver_agent_id: payments-agent
+    message_content|contains:
+      - ignore
+      - override
+      - release
+  condition: selection
+falsepositives:
+  - A new workflow that legitimately pairs these agents (register it in agent_collaboration_config first)
+level: high

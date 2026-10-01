@@ -1,0 +1,7 @@
+# The incident record that drives recovery (Chapter 26 §26.4, Chapter 25 timeline reconstruction).
+case_id: CASE-2026-0931
+summary: >
+  A stolen CI credential was used to push a malicious change that the pipeline then built, signed and
+  attested normally as 1.5.0. Signature and provenance prove *where* an image was built, not that the
+  source was trustworthy.
+compromise_window_start: "2026-09-29T02:13:00Z"   # earliest attacker activity from the timeline (LAB-21)

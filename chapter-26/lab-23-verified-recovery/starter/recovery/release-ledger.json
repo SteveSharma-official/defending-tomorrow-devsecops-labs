@@ -1,0 +1,11 @@
+{
+  "service": "dt-orders-api",
+  "image": "ghcr.io/<your-username>/dt-lab-13",
+  "note": "Synthetic ledger. Replace the digests with real ones from your LAB-13 releases to run the verify job.",
+  "releases": [
+    {"version": "1.4.0", "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111", "built_at": "2026-09-20T09:12:00Z", "signature_verified": true,  "provenance_verified": true,  "vulnerability_gate": "pass"},
+    {"version": "1.4.1", "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222", "built_at": "2026-09-24T14:40:00Z", "signature_verified": true,  "provenance_verified": true,  "vulnerability_gate": "pass"},
+    {"version": "1.4.2", "digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333", "built_at": "2026-09-26T08:05:00Z", "signature_verified": false, "provenance_verified": false, "vulnerability_gate": "pass"},
+    {"version": "1.5.0", "digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444", "built_at": "2026-09-29T22:51:00Z", "signature_verified": true,  "provenance_verified": true,  "vulnerability_gate": "pass"}
+  ]
+}

@@ -1,0 +1,2 @@
+# Evidence must be byte-identical on every OS, or its hashes will not verify.
+evidence-sample/** -text

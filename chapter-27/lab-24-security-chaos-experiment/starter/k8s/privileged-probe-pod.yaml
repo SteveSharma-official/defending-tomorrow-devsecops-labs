@@ -1,0 +1,13 @@
+# INTENTIONALLY INSECURE — probe only. It must be REJECTED while the namespace enforces "restricted".
+apiVersion: v1
+kind: Pod
+metadata:
+  name: privileged-probe
+  namespace: lab24-orders
+spec:
+  containers:
+    - name: probe
+      image: busybox:1.37
+      command: ["sleep", "5"]
+      securityContext:
+        privileged: true

@@ -1,0 +1,2 @@
+LAST SEEN TYPE REASON OBJECT MESSAGE
+3m Normal Started pod/orders-api-7c9d Started container app

@@ -1,0 +1,15 @@
+id: HUNT-CLOUD-001
+title: Long-lived access key used from a never-seen network location
+tier: 2                       # §24.3 Tier 2 — coverage gap: no rule covers new-IP use of a CI key
+attack_technique: T1078.004   # Valid Accounts: Cloud Accounts
+hypothesis: >
+  If an adversary has stolen a long-lived CI access key, we expect API calls by that principal
+  from a source IP it has not used in the previous 14 days, beginning with discovery calls
+  (Get/List/Describe) and moving to secret access.
+data_sources: [cloudtrail]
+scope: {time_range: "last 30 days", entities: "all IAM users"}
+query: HUNT-CLOUD-001.sql
+time_allocation_hours: 4
+# Disposition rules (§24.2 phase 5): rows returned → confirmed; none → cleared.
+feedback:
+  detection_candidate: detections/new_ip_secret_access.yml   # §24.2 phase 6: every confirmed hunt feeds Chapter 23

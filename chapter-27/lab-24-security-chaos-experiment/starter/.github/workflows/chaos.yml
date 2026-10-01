@@ -1,0 +1,67 @@
+# LAB-24 — security chaos engineering. The gate (every PR) checks each experiment is a measurable,
+# guarded hypothesis. The kind job (manual) executes EXP-001 and evaluates the measured result.
+name: chaos
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  KIND_VERSION: "v0.33.0"
+  KIND_SHA256: "aee6151561422756b764a4ae28e7f44cda5af5a9eead3cc9985112b1de8d8e0d"
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - run: pip install pytest==9.1.1 PyYAML==6.0.3
+      - name: Define + Guard — every experiment is measurable and bounded
+        run: for f in experiments/*.yaml; do python tools/chaos.py check "$f"; done
+      - name: Learn — evaluate the recorded sample run
+        run: python tools/chaos.py evaluate experiments/EXP-001-psa-enforcement-removed.yaml results/sample-run.json
+      - name: Unit tests
+        run: pytest -q tools/tests
+
+  execute-on-kind:
+    if: github.event_name == 'workflow_dispatch'
+    needs: gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - run: pip install PyYAML==6.0.3
+      - name: Install kind (checksum-verified) and create a disposable cluster
+        run: |
+          curl -sSLf -o kind "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64"
+          echo "${KIND_SHA256}  kind" | sha256sum -c -
+          chmod +x kind && sudo mv kind /usr/local/bin/kind
+          kind create cluster --name lab24 --wait 120s
+      - name: Execute EXP-001
+        run: bash scripts/run-experiment.sh
+      - name: Evaluate against the hypothesis
+        run: python tools/chaos.py evaluate experiments/EXP-001-psa-enforcement-removed.yaml results/run.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: experiment-results
+          path: results/
+      - name: Delete the cluster
+        if: always()
+        run: kind delete cluster --name lab24

@@ -1,0 +1,13 @@
+{
+  "algorithm": "sha256",
+  "case_id": "CASE-2026-0931",
+  "collected_at": "2026-09-30T02:20:00+00:00",
+  "collector": "lab-22-sample",
+  "files": {
+    "events.txt": "51a8010074124e4337bfbf0bfd3e955fc6308b622952a32ab68ddd61806ca492",
+    "filesystem-listing.txt": "92157f6c3747ca5c000036d94a9c88126d70288aca047fcc8476b6da707a14a5",
+    "logs.txt": "16f2b89953191339068643ff1be5f3e094f1eafb6b521e25cf74321cee9ad144",
+    "pod.yaml": "fa5b42d3e57cc332246fe9fce141fe94f8e6cd6692deea2a87675d360ed32866"
+  },
+  "manifest_digest": "edcac4087acf9517f53f7baa2813fbd5858e78aeba4590a028a3d6a65e0c0067"
+}

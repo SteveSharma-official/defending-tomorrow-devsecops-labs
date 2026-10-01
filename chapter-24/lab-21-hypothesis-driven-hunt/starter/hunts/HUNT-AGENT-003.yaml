@@ -1,0 +1,14 @@
+id: HUNT-AGENT-003
+title: Agent-to-agent instructions between agents that have never communicated
+tier: 4                       # §24.3 Tier 4 — environmental change: new agent deployments
+attack_technique: AML.T0051   # MITRE ATLAS: LLM Prompt Injection (propagated)
+hypothesis: >
+  If a compromised agent is propagating injected instructions, we expect messages carrying
+  instruction verbs from a sender that has never messaged that receiver before, where the sender
+  is not an authorised orchestrator for the receiver.
+data_sources: [agent_communication_log, agent_collaboration_config]
+scope: {time_range: "last 30 days vs prior 90 days baseline", entities: "all agents"}
+query: HUNT-AGENT-003.sql
+time_allocation_hours: 6
+feedback:
+  detection_candidate: detections/novel_agent_pair_instruction.yml
