@@ -1,0 +1,29 @@
+# LAB-25 — release gate for a SOC copilot version: security-outcome metrics against analyst ground truth.
+# Uses recorded outputs, so no model, API key or vendor account is needed.
+name: copilot-eval
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - run: pip install pytest==9.1.1 PyYAML==6.0.3
+      - name: Evaluator unit tests
+        run: pytest -q tools/tests
+      - name: Every copilot version under copilot-outputs/ must pass the gate
+        run: python tools/evaluate_copilot.py eval/alerts.json eval/thresholds.yaml copilot-outputs/*.json

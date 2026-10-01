@@ -1,0 +1,13 @@
+{
+  "expected_allow": false,
+  "action": {
+    "action_class": "deployment_rollback",
+    "requested_level": 3,
+    "affected_count": 1,
+    "rollback_verified": true,
+    "accumulated_actions": 1,
+    "session_duration_seconds": 120,
+    "previous_rollback_failed": true,
+    "cascading_indicators": []
+  }
+}

@@ -1,0 +1,39 @@
+# Checklist 34.1 — Security Program Maturity Assessment (Chapter 34), transcribed from the book.
+# Scoring guide: 0–3 Traditional · 4–6 Transitioning · 7–9 Operational · 10–12 Advanced.
+items:
+- id: C34-01
+  control: SPOM documented with named leaders for all five layers (Governance, Capability, Delivery, Operations, Assurance)
+  reference: Section 34.2, Figure 34.1
+- id: C34-02
+  control: Platform-security convergence operating at Mode 2 (Aligned) or Mode 3 (Embedded)
+  reference: Section 34.2
+- id: C34-03
+  control: Security capabilities delivered as platform services with adoption metrics tracked
+  reference: Section 34.2, Section 34.3
+- id: C34-04
+  control: AI security engineering team established with named AI security architect
+  reference: Section 34.3.2
+- id: C34-05
+  control: Budget organized by SPOM capability domains rather than by tool category
+  reference: Section 34.4, Table 34.2
+- id: C34-06
+  control: Vendor strategy documented with platform-first approach and explicit build decisions for AI security
+  reference: Section 34.5, Table 34.3
+- id: C34-07
+  control: Agent governance ownership table (Table 34.4) populated with named individuals for every row
+  reference: Section 34.6, Table 34.4
+- id: C34-08
+  control: Security engineer career ladder defined with progression measured by capability delivery, not tool operation
+  reference: Section 34.7.2
+- id: C34-09
+  control: Hiring profile adjusted to recruit platform and software engineers into security roles
+  reference: Section 34.7.3
+- id: C34-10
+  control: SPOM reassessed within the past twelve months with documented gap analysis and remediation plan
+  reference: Section 34.2, Case Study
+- id: C34-11
+  control: CISO reporting to CEO or board with direct board access for risk decisions
+  reference: Table 34.1
+- id: C34-12
+  control: Organizational anti-patterns (centre-of-excellence trap, outsourced core, platform-shortcut) explicitly assessed and mitigated
+  reference: Section 34.3.3

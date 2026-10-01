@@ -28,14 +28,14 @@ jobs:
         with:
           version: "1.20.2"
       - name: Install validators (pinned)
-        run: pip install actionlint-py==1.7.12.25 zizmor==1.30.1 pytest==9.1.1 PyYAML==6.0.3 Flask==3.1.3 shellcheck-py==0.10.0.1
+        run: pip install actionlint-py==1.7.12.25 zizmor==1.30.1 pytest==9.1.1 PyYAML==6.0.3 Flask==3.1.3 shellcheck-py==0.10.0.1 duckdb==1.5.6 "cyclonedx-python-lib[json-validation]==11.12.0"
       - name: Lint lab workflows (the LAB-04 deliberately insecure starter is excluded)
         run: |
           mapfile -t files < <(find . -path '*/.github/workflows/*.yml' -not -path './chapter-11/lab-04-harden-github-actions/starter/*' | sort)
           actionlint "${files[@]}"
           for f in "${files[@]}"; do zizmor --offline --min-severity medium "$f"; done
       - name: Shell scripts
-        run: shellcheck shared/scripts/*.sh cloud/azure/az-lab-02-azure-policy-as-code/starter/scripts/*.sh
+        run: shellcheck shared/scripts/*.sh cloud/azure/az-lab-02-azure-policy-as-code/starter/scripts/*.sh chapter-25/lab-22-evidence-first-containment/starter/scripts/*.sh chapter-27/lab-24-security-chaos-experiment/starter/scripts/*.sh
       - name: Rego policy tests
         run: |
           opa check --strict chapter-17/lab-08-policy-as-code-conftest/starter/policy
@@ -43,6 +43,8 @@ jobs:
           opa test chapter-11/lab-14-security-gates-environments/starter/policy
           opa test chapter-31/lab-18-agent-tool-allowlist-opa/starter/policy chapter-31/lab-18-agent-tool-allowlist-opa/starter/data
           opa test capstone/secure-devsecops-pipeline/solution/policy
+          opa check --strict chapter-33/lab-28-staged-autonomy-policy/starter/policy chapter-33/lab-28-staged-autonomy-policy/starter/data
+          opa test chapter-33/lab-28-staged-autonomy-policy/starter/policy chapter-33/lab-28-staged-autonomy-policy/starter/data
       - name: Python unit tests
         run: |
           pytest -q shared/sample-apps/dt-orders-api
@@ -51,3 +53,19 @@ jobs:
           pytest -q chapter-29/lab-19-llm-guardrail-regression/starter/tests
           python chapter-04/lab-01-threat-model-as-code/starter/tools/check_threat_model.py chapter-04/lab-01-threat-model-as-code/solution/threat-model/threat-model.yaml
           (cd cloud/azure/az-lab-02-azure-policy-as-code/starter && python tests/check_policies.py)
+      - name: Volume 2 lab suites (LAB-20 to LAB-30)
+        run: |
+          for lab in chapter-22/lab-20-security-telemetry-pipeline chapter-24/lab-21-hypothesis-driven-hunt \
+                     chapter-25/lab-22-evidence-first-containment chapter-26/lab-23-verified-recovery \
+                     chapter-27/lab-24-security-chaos-experiment chapter-28/lab-25-evaluate-soc-copilot \
+                     chapter-30/lab-26-permission-aware-retrieval chapter-32/lab-27-model-signing-ai-bom \
+                     chapter-34/lab-29-programme-self-assessment chapter-35/lab-30-metrics-from-evidence; do
+            echo "::group::${lab}"
+            (cd "${lab}/starter" && pytest -q tools/tests)
+            echo "::endgroup::"
+          done
+          (cd chapter-22/lab-20-security-telemetry-pipeline/starter && python tools/check_collector.py collector/security-collector.yaml)
+          (cd chapter-24/lab-21-hypothesis-driven-hunt/starter && python tools/run_hunts.py --report /tmp/hunt-report.json)
+          (cd chapter-25/lab-22-evidence-first-containment/starter && python tools/check_playbook.py playbooks/*.yaml && python tools/evidence_manifest.py verify evidence-sample/case-2026-0931)
+          (cd chapter-34/lab-29-programme-self-assessment/starter && python tools/assess.py assessment/checklist-34.1.yaml assessment/self-assessment.yaml /tmp/lab29)
+          (cd chapter-35/lab-30-metrics-from-evidence/starter && python tools/metrics.py evidence metrics-targets.yaml /tmp/lab30)

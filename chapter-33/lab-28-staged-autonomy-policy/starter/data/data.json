@@ -1,0 +1,8 @@
+{
+  "containment_maturity": {
+    "visibility": 3,
+    "revocation": 2,
+    "preservation": 2,
+    "validation": 2
+  }
+}

@@ -36,8 +36,12 @@ annotated tags peeled to their commit). Re-verify periodically and keep them cur
 | Conftest | 0.62.0 | conftest_0.62.0_Linux_x86_64.tar.gz | 284231908e4cf66d156e5577c3eee2f67d9f2edf2521fa2309e0df1969f871e5 |
 | Kyverno CLI | 1.15.2 | kyverno-cli_v1.15.2_linux_x86_64.tar.gz | c90520ba24fb8b8df003ec22d6d2621e4a3d3c7497665fdcf84e9eab4ff1dfe0 |
 | Grype | 0.119.0 | grype_0.119.0_linux_amd64.tar.gz | 3fa2dc4b924621ab65404cf08d0b8438d896d80ab949c9d5a4ca283c36004c9b |
+| OpenTelemetry Collector Contrib (LAB-20) | 0.162.0 | otelcol-contrib_0.162.0_linux_amd64.tar.gz | fcc063749f730f8c21fe29f2d340ff174f5f1c5885bd3156fb6c985a3036fcc3 ¹ |
+| kind (LAB-22, LAB-24) | v0.33.0 | kind-linux-amd64 | aee6151561422756b764a4ae28e7f44cda5af5a9eead3cc9985112b1de8d8e0d |
+
+¹ Computed from the release archive downloaded on 1 October 2026; the project's checksums file could not be retrieved at that time. Cross-check it against the published checksums before relying on it.
 
 > **Why Trivy is pinned with a checksum:** Trivy release v0.69.4 and Docker Hub images v0.69.5–v0.69.6 were malicious, and 76 of 77 `aquasecurity/trivy-action` tags were hijacked (19–22 March 2026, advisory GHSA-69fq-xp46-6x23). Never install security tooling by mutable tag.
 
 ## Python packages (pinned in workflows)
-checkov 3.3.19 · semgrep 1.177.0 · pip-audit 2.10.1 · zizmor 1.30.1 · actionlint-py 1.7.12.25 · sigma-cli 3.1.0 · pySigma-backend-splunk 2.1.0 · pytest 9.1.1 · PyYAML 6.0.3
+checkov 3.3.19 · semgrep 1.177.0 · pip-audit 2.10.1 · zizmor 1.30.1 · actionlint-py 1.7.12.25 · sigma-cli 3.1.0 · pySigma-backend-splunk 2.1.0 · pytest 9.1.1 · PyYAML 6.0.3 · duckdb 1.5.6 (LAB-21) · cyclonedx-python-lib 11.12.0 (LAB-27)

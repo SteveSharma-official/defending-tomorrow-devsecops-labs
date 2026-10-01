@@ -1,0 +1,35 @@
+# LAB-30 — security metrics computed from sealed evidence (Chapter 35). Untrustworthy evidence fails the
+# build; a missed target is published as a finding for the programme.
+name: metrics
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  metrics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - run: pip install pytest==9.1.1 PyYAML==6.0.3
+      - name: Unit tests
+        run: pytest -q tools/tests
+      - name: Verify evidence and compute metrics
+        run: python tools/metrics.py evidence metrics-targets.yaml out
+      - name: Publish to the run summary
+        run: cat out/metrics.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: security-metrics
+          path: out/

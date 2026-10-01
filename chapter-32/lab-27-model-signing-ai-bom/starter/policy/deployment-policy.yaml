@@ -1,0 +1,4 @@
+# Deployment acceptance policy for models (Chapter 32 §32.3.2, Stage 3 — policy compliance).
+min_accuracy: 0.95
+allowed_licenses: [MIT, Apache-2.0]
+require_dataset_reference: true

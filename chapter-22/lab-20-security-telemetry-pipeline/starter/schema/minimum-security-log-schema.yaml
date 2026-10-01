@@ -1,0 +1,20 @@
+# Minimum security log schema — Chapter 22, §22.5.2. Every event entering the security data plane
+# must carry all nine fields. Thresholds come from Table 22.2 (Telemetry Quality Framework).
+required_fields:
+  - timestamp        # when the event occurred (UTC, ms/µs precision) — not when it was logged
+  - event_type       # maps to the taxonomy in Table 22.1
+  - actor_identity   # user, service account or agent ID; "anonymous" rather than missing
+  - actor_source     # source IP/port, or originating system identity for non-network events
+  - resource_type
+  - resource_id
+  - action
+  - outcome          # non-negotiable: success | failure | denied | error
+  - source_system
+allowed_values:
+  outcome: [success, failure, denied, error]
+thresholds:
+  completeness_min_pct: 95     # ≥95% of events in each event_type have every required field
+critical_event_types:          # Fidelity: zero sampling permitted on these categories
+  - authentication
+  - authorization
+  - process_execution

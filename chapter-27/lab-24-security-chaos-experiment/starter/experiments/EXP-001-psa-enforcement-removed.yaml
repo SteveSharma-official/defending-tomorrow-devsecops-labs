@@ -1,0 +1,32 @@
+# Security chaos experiment — Chapter 27 SCEF: Define → Design → Guard → Execute → Learn.
+id: EXP-001
+title: Pod Security Admission enforcement silently removed from a workload namespace
+define:                                   # §27.2.1 four-element hypothesis
+  condition: >
+    The pod-security.kubernetes.io/enforce=restricted label is removed from namespace lab24-orders,
+    as a careless change or an attacker preparing to run a privileged pod would do.
+  detection:
+    mechanism: control-drift check (scripts/drift-watch.sh) comparing live labels with desired state
+    max_seconds: 60
+  response:
+    action: drift watcher re-applies the desired label and records the action
+    max_seconds: 120
+  recovery:
+    state: a privileged pod is rejected by admission again
+    max_seconds: 180
+design:                                   # §27.2.2
+  category: control-disablement
+  injection: kubectl label namespace lab24-orders pod-security.kubernetes.io/enforce-
+  measurement_points: [injection_at, detected_at, responded_at, recovered_at]
+guard:                                    # §27.2.3 the experiment must not become the incident
+  environment: kind
+  blast_radius:
+    namespaces: [lab24-orders]
+  max_duration_minutes: 15
+  abort_conditions:
+    - any namespace other than lab24-* changes state
+    - experiment exceeds max_duration_minutes
+  rollback: kubectl label namespace lab24-orders pod-security.kubernetes.io/enforce=restricted --overwrite
+  approved_by: lab-owner
+learn:                                    # §27.2.5 — every failed expectation becomes a tracked finding
+  findings: []

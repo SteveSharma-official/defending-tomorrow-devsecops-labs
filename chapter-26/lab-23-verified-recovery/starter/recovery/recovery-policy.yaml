@@ -1,0 +1,5 @@
+# Rules for choosing a "last known good" restore target.
+require_signature: true
+require_provenance: true
+require_vulnerability_gate: pass
+exclude_builds_after_compromise_start: true   # signed ≠ trustworthy when the build system itself was abused

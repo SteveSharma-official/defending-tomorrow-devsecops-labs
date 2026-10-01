@@ -1,0 +1,10 @@
+# Runbook-as-code for restoring dt-orders-api to a verified known-good image (Chapter 26 §26.4.2).
+name: dt-orders-api-verified-recovery
+steps:
+  - {id: isolate-traffic,      kind: traffic,  action: scale the compromised Deployment to zero}
+  - {id: select-target,        kind: select,   action: tools/select_recovery_target.py}
+  - {id: verify-signature,     kind: verify,   action: "cosign verify <image>@<digest> --certificate-identity-regexp ... --certificate-oidc-issuer https://token.actions.githubusercontent.com"}
+  - {id: verify-provenance,    kind: verify,   action: "gh attestation verify oci://<image>@<digest> --repo <owner>/dt-lab-13"}
+  - {id: deploy-known-good,    kind: deploy,   image_ref: "<image>@<digest>"}
+  - {id: health-gate,          kind: health,   action: readiness + synthetic transaction}
+  - {id: restore-traffic,      kind: traffic,  action: scale up and re-enable ingress}

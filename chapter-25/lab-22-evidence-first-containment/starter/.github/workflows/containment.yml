@@ -1,0 +1,67 @@
+# LAB-22 — evidence-first containment. The gate (every PR) checks the playbook order and the evidence
+# manifest. The kind exercise (manual run) performs the containment on a real, disposable cluster.
+name: containment
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  KIND_VERSION: "v0.33.0"
+  KIND_SHA256: "aee6151561422756b764a4ae28e7f44cda5af5a9eead3cc9985112b1de8d8e0d"
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - run: pip install pytest==9.1.1 PyYAML==6.0.3
+      - name: Playbook follows the containment sequence model
+        run: python tools/check_playbook.py playbooks/*.yaml
+      - name: Sample evidence is intact
+        run: python tools/evidence_manifest.py verify evidence-sample/case-2026-0931
+      - name: Unit tests
+        run: pytest -q tools/tests
+
+  kind-exercise:
+    if: github.event_name == 'workflow_dispatch'
+    needs: gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install kind (checksum-verified)
+        run: |
+          curl -sSLf -o kind "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64"
+          echo "${KIND_SHA256}  kind" | sha256sum -c -
+          chmod +x kind && sudo mv kind /usr/local/bin/kind
+      - name: Create a disposable cluster and the compromised workload
+        run: |
+          kind create cluster --name lab22 --wait 120s
+          kubectl apply -f k8s/compromised-pod.yaml
+          kubectl -n lab22 wait --for=condition=Ready pod/orders-api --timeout=120s
+          sleep 5
+      - name: Evidence-first containment
+        env:
+          CONFIRM_DESTRUCTIVE: "yes"
+        run: bash scripts/contain-pod.sh lab22 orders-api CASE-LAB22-${{ github.run_id }}
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: evidence
+          path: evidence/
+      - name: Delete the cluster
+        if: always()
+        run: kind delete cluster --name lab22

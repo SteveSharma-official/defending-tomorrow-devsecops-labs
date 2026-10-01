@@ -1,0 +1,7 @@
+# Layer 2 operational metrics (Chapter 35, Table 35.2) and the targets this programme has agreed.
+platform_security_adoption_pct_min: 85
+policy_as_code_enforcement_pct_min: 85
+supply_chain_integrity_pct_min: 80
+mttd_minutes_max: 30
+mttc_minutes_max: 60
+false_positive_rate_pct_max: 50

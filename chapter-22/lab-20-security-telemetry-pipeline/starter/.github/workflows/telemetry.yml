@@ -1,0 +1,46 @@
+# LAB-20 — security telemetry pipeline gate: the Collector config must load (otelcol-contrib validate)
+# and be security-fit; sample events must meet the minimum security log schema (Chapter 22).
+name: telemetry
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  OTELCOL_VERSION: "0.162.0"
+  # SHA-256 of otelcol-contrib_0.162.0_linux_amd64.tar.gz (see docs/action-pins.md in the labs repository)
+  OTELCOL_SHA256: "fcc063749f730f8c21fe29f2d340ff174f5f1c5885bd3156fb6c985a3036fcc3"
+
+jobs:
+  collector:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install otelcol-contrib (checksum-verified)
+        run: |
+          f="otelcol-contrib_${OTELCOL_VERSION}_linux_amd64.tar.gz"
+          curl -sSLf -o "$f" "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v${OTELCOL_VERSION}/${f}"
+          echo "${OTELCOL_SHA256}  ${f}" | sha256sum -c -
+          tar xzf "$f" otelcol-contrib
+      - name: Config loads (component names, references, syntax)
+        env:
+          DATA_PLANE_TOKEN: validation-only-not-a-secret
+        run: ./otelcol-contrib validate --config=collector/security-collector.yaml
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - run: pip install pytest==9.1.1 PyYAML==6.0.3
+      - name: Config is security-fit
+        run: python tools/check_collector.py collector/security-collector.yaml
+      - name: Sample telemetry meets the minimum security log schema
+        run: python tools/check_telemetry.py schema/minimum-security-log-schema.yaml samples/events.jsonl
+      - name: Unit tests
+        run: pytest -q tools/tests

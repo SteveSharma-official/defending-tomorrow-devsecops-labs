@@ -1,0 +1,52 @@
+# Containment playbook for a compromised Kubernetes pod — Chapter 25 §25.3 and §25.5.
+# Evidence first: nothing destructive happens until logs, spec, events and filesystem are preserved and hashed.
+id: PB-POD-CONTAIN-001
+title: Compromised pod — evidence-first containment
+trigger: [DET-K8S-EXEC-001, HUNT-K8S-003]
+steps:
+  - id: preserve_pod_spec
+    class: preserve
+    evidence: [spec, events]
+    action: kubectl get pod -o yaml; kubectl get events
+    reversible: true
+    blast_radius: none
+    approval: auto
+  - id: preserve_logs
+    class: preserve
+    evidence: [logs]
+    action: kubectl logs --all-containers (and --previous)
+    reversible: true
+    blast_radius: none
+    approval: auto
+  - id: preserve_filesystem
+    class: preserve
+    evidence: [filesystem]
+    action: kubectl exec -- tar of writable paths
+    reversible: true
+    blast_radius: none
+    approval: auto
+  - id: hash_evidence
+    class: preserve
+    evidence: [manifest]
+    action: tools/evidence_manifest.py create
+    reversible: true
+    blast_radius: none
+    approval: auto
+  - id: isolate_pod
+    class: isolate
+    action: label quarantine=true; deny-all NetworkPolicy selects it
+    reversible: true
+    blast_radius: single_workload
+    approval: auto
+  - id: revoke_service_account_tokens
+    class: revoke
+    action: delete the pod's ServiceAccount token secrets / rotate projected-token issuer keys if required
+    reversible: false
+    blast_radius: service
+    approval: human
+  - id: delete_pod
+    class: destroy
+    action: kubectl delete pod
+    reversible: false
+    blast_radius: single_workload
+    approval: human

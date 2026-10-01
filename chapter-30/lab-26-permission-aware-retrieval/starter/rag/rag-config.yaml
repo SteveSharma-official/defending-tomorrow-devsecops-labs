@@ -1,0 +1,6 @@
+# Retrieval Validation Model settings (Chapter 30 §30.3–30.7). Stage order: provenance → access → injection.
+access_control: prefilter        # prefilter | postfilter — postfilter leaks through ranking and result counts (§30.3.1)
+top_k: 3
+verify_provenance: true          # Stage 1: drop documents whose text no longer matches the ingestion hash
+injection_scan: true             # Stage 3: drop documents carrying instructions aimed at the model
+disclose_withheld_count: false   # never tell a user how many results were hidden from them
