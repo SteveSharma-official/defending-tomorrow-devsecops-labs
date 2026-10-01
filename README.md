@@ -47,11 +47,34 @@ defending-tomorrow-devsecops-labs/
 ├── shared/
 │   ├── sample-apps/dt-orders-api/   secure baseline Flask + SQLite service used by most labs
 │   └── scripts/                     start-lab.sh, make-test-secret.sh (synthetic credentials only)
-├── chapter-00/ … chapter-31/        one folder per lab: README.md, starter/, (solution/), lab-changes/
+├── chapter-00/ … chapter-35/        one folder per lab: README.md, starter/, (solution/), lab-changes/
 ├── cloud/aws/ · cloud/azure/        labs that need a cloud account (clearly marked)
 ├── capstone/secure-devsecops-pipeline/
 └── .github/workflows/validate-labs.yml   keeps this repository's own lab code honest
 ```
+
+## Volume 2 Labs (Chapters 22–36)
+_Defending Tomorrow_ is published in two volumes with continuous chapter numbering. Volume 1 covers Chapters 0–21 (LAB-00 to LAB-16, the cloud labs and the CAPSTONE). Volume 2 covers detection engineering, cyber resilience, AI security and executive leadership (Chapters 22–36), with these labs:
+
+| Part | Chapter | Lab |
+|---|---|---|
+| V — Detection Engineering and Cyber Resilience | 22 Observability for Security | LAB-20 |
+| | 23 Detection Engineering | LAB-17 |
+| | 24 Threat Hunting | LAB-21 |
+| | 25 Incident Response Engineering | LAB-22 |
+| | 26 Cyber Resilience Engineering | LAB-23 |
+| | 27 Chaos Security Engineering | LAB-24 |
+| VI — AI Security and Autonomous Defense | 28 AI for Security Operations | LAB-25 |
+| | 29 Securing AI Systems | LAB-19 |
+| | 30 RAG Security Engineering | LAB-26 (and LAB-19) |
+| | 31 Agent Security Engineering | LAB-18 |
+| | 32 AI Supply Chain Security | LAB-27 |
+| | 33 Autonomous Remediation | LAB-28 |
+| VII — Executive Cyber Leadership | 34 Building a Modern Security Program | LAB-29 |
+| | 35 Security Metrics That Matter | LAB-30 |
+| | 36 Defending Tomorrow | CAPSTONE (§36.7 Where to Begin) |
+
+Every Volume 2 lab runs on GitHub Free with no cloud account. LAB-22 and LAB-24 include an optional job that runs on a disposable kind cluster, LAB-23 verifies the image you built in LAB-13, and LAB-27 signs with GitHub OIDC keyless signing.
 
 ## Prerequisites
 **Common (all labs):** free GitHub account · Git ≥ 2.40 (Windows: Git Bash) · a code editor.
@@ -60,7 +83,7 @@ defending-tomorrow-devsecops-labs/
 Exact prerequisites, **Required** versus **Optional**, are listed in every lab.
 
 ## Cloud Cost Warning
-LAB-00 to LAB-19 and the CAPSTONE are designed to run on **GitHub Free with public repositories**. That reflects GitHub's published plan features in September 2026 and may change — verify before relying on it.
+LAB-00 to LAB-30 and the CAPSTONE are designed to run on **GitHub Free with public repositories**. That reflects GitHub's published plan features in September 2026 and may change — verify before relying on it.
 The **AWS-LAB** and **AZ-LAB** labs create real cloud resources. **They can incur charges.** Use a sandbox account, set a budget alert first, follow each lab's cleanup section in full, and verify current pricing and free-tier eligibility before starting. Nothing in this repository is promised to remain free.
 
 ## Lab Index
@@ -86,11 +109,22 @@ The **AWS-LAB** and **AZ-LAB** labs create real cloud resources. **They can incu
 | [LAB-17](chapter-23/lab-17-detection-as-code-sigma/README.md) | Ch 23 | Detection as Code with Sigma | Advanced | No | `chapter-23/lab-17-detection-as-code-sigma` |
 | [LAB-18](chapter-31/lab-18-agent-tool-allowlist-opa/README.md) | Ch 31 | Govern Agent Tool Access with Policy | Advanced | No | `chapter-31/lab-18-agent-tool-allowlist-opa` |
 | [LAB-19](chapter-29/lab-19-llm-guardrail-regression/README.md) | Ch 29, 30 | LLM Guardrail Regression Testing | Advanced | No | `chapter-29/lab-19-llm-guardrail-regression` |
+| [LAB-20](chapter-22/lab-20-security-telemetry-pipeline/README.md) | Ch 22 | Security Telemetry Pipeline: Validate and Gate an OpenTelemetry Collector Config | Intermediate | No | `chapter-22/lab-20-security-telemetry-pipeline` |
+| [LAB-21](chapter-24/lab-21-hypothesis-driven-hunt/README.md) | Ch 24, 23 | Hypothesis-Driven Hunting as Code: DuckDB Hunts with Ground-Truth Tests | Advanced | No | `chapter-24/lab-21-hypothesis-driven-hunt` |
+| [LAB-22](chapter-25/lab-22-evidence-first-containment/README.md) | Ch 25 | Evidence-First Containment: Preserve, Hash, Isolate, Then Destroy | Advanced | No (optional kind) | `chapter-25/lab-22-evidence-first-containment` |
+| [LAB-23](chapter-26/lab-23-verified-recovery/README.md) | Ch 26, 13 | Verified Recovery: Restore the Last Known-Good, Signed and Attested Image | Advanced | No (GHCR) | `chapter-26/lab-23-verified-recovery` |
+| [LAB-24](chapter-27/lab-24-security-chaos-experiment/README.md) | Ch 27 | Security Chaos Experiment: Prove Detection of a Silently Disabled Control | Advanced | No (optional kind) | `chapter-27/lab-24-security-chaos-experiment` |
+| [LAB-25](chapter-28/lab-25-evaluate-soc-copilot/README.md) | Ch 28 | Evaluate a SOC Copilot: Security-Outcome Gates Instead of Vendor Headlines | Intermediate | No | `chapter-28/lab-25-evaluate-soc-copilot` |
+| [LAB-26](chapter-30/lab-26-permission-aware-retrieval/README.md) | Ch 30 | Permission-Aware Retrieval: Stop RAG Exfiltration and Existence Leaks | Advanced | No | `chapter-30/lab-26-permission-aware-retrieval` |
+| [LAB-27](chapter-32/lab-27-model-signing-ai-bom/README.md) | Ch 32, 13 | Model Signing and AI-BOM: Verify a Model Before It Is Deployed | Advanced | No | `chapter-32/lab-27-model-signing-ai-bom` |
+| [LAB-28](chapter-33/lab-28-staged-autonomy-policy/README.md) | Ch 33 | Staged Autonomy as Policy: Govern What a Remediation Agent May Do Alone | Advanced | No | `chapter-33/lab-28-staged-autonomy-policy` |
+| [LAB-29](chapter-34/lab-29-programme-self-assessment/README.md) | Ch 34 | Programme Maturity Self-Assessment as Code (Checklist 34.1) | Beginner | No | `chapter-34/lab-29-programme-self-assessment` |
+| [LAB-30](chapter-35/lab-30-metrics-from-evidence/README.md) | Ch 35, 18 | Metrics from Evidence: Compute Chapter 35 Metrics You Can Defend | Intermediate | No | `chapter-35/lab-30-metrics-from-evidence` |
 | [AWS-LAB-01](cloud/aws/aws-lab-01-github-oidc-ecr/README.md) | Ch 6, 11; App A | Keyless CI to AWS: GitHub OIDC and ECR | Advanced | Yes — AWS | `cloud/aws/aws-lab-01-github-oidc-ecr` |
 | [AWS-LAB-02](cloud/aws/aws-lab-02-terraform-drift-gate/README.md) | Ch 12, 8, 17 | Gated Terraform Delivery to AWS with Drift Detection | Advanced | Yes — AWS | `cloud/aws/aws-lab-02-terraform-drift-gate` |
 | [AZ-LAB-01](cloud/azure/az-lab-01-github-oidc-bicep/README.md) | Ch 6, 12; App B | Keyless CI to Azure: OIDC, Managed Identity, Bicep | Advanced | Yes — Azure | `cloud/azure/az-lab-01-github-oidc-bicep` |
 | [AZ-LAB-02](cloud/azure/az-lab-02-azure-policy-as-code/README.md) | Ch 17; App B | Azure Policy as Code | Advanced | Yes — Azure | `cloud/azure/az-lab-02-azure-policy-as-code` |
-| [CAPSTONE](capstone/secure-devsecops-pipeline/README.md) | Parts I–IV | Build a Secure DevSecOps Pipeline | Advanced | No (optional cloud) | `capstone/secure-devsecops-pipeline` |
+| [CAPSTONE](capstone/secure-devsecops-pipeline/README.md) | Parts I–IV; Ch 36 | Build a Secure DevSecOps Pipeline | Advanced | No (optional cloud) | `capstone/secure-devsecops-pipeline` |
 
 Full roadmap with chapter sections, skills and progression: [docs/lab-roadmap.md](docs/lab-roadmap.md).
 
