@@ -1,0 +1,3 @@
+# Hashes must be identical on every OS.
+*.csv -text
+artifacts/** -text

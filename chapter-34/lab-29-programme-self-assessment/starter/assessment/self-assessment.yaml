@@ -1,0 +1,19 @@
+# Your organisation's answers to Checklist 34.1. This sample describes a fictional organisation.
+# Rules (tools/assess.py): "implemented" needs evidence that exists in this repository, a named owner
+# (a person, not a team) and a review date within the last 12 months.
+organisation: Example Co (fictional)
+assessed_on: 2026-09-30
+assessor: Jordan Lee
+answers:
+  C34-01: {status: implemented, owner: Priya Raman, evidence: evidence/spom-2026.md, reviewed_on: 2026-08-14}
+  C34-02: {status: partial, owner: Priya Raman, note: "Mode 2 for the container platform; Mode 1 elsewhere"}
+  C34-03: {status: partial, owner: Sam Okafor, note: "golden path adoption tracked for CI only"}
+  C34-04: {status: not_implemented, owner: Priya Raman, note: "AI security architect role approved, not yet filled"}
+  C34-05: {status: implemented, owner: Alex Chen, evidence: evidence/budget-by-capability-fy27.md, reviewed_on: 2026-07-01}
+  C34-06: {status: not_implemented, owner: Alex Chen}
+  C34-07: {status: partial, owner: Priya Raman, note: "4 of 9 rows have named individuals"}
+  C34-08: {status: not_implemented, owner: Sam Okafor}
+  C34-09: {status: not_implemented, owner: Sam Okafor}
+  C34-10: {status: implemented, owner: Priya Raman, evidence: evidence/spom-2026.md, reviewed_on: 2026-08-14}
+  C34-11: {status: implemented, owner: Morgan Diaz, evidence: evidence/board-charter.md, reviewed_on: 2026-03-02}
+  C34-12: {status: not_implemented, owner: Priya Raman}
